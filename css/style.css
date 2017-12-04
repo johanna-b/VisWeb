@@ -1,0 +1,18 @@
+.dg .c input[type=text] {
+
+    line-height:normal;
+}
+.dg .c div {
+    box-sizing: content-box;
+}
+
+/* Set height of the grid so .sidenav can be 100% (adjust if needed) */
+.row.content {height: 400px}
+
+/* Set gray background color and 100% height */
+.sidebar_ui {
+    width:220px;
+    background-color: #f1f1f1;
+    height: 100%;
+    padding: 1.2em;
+}
