@@ -1,7 +1,7 @@
 // Create an instance, which also creates a UI pane
 //var gui = new dat.GUI();
 
-var data_path = "data/processed/";
+var data_path = "app/data/processed/";
 
 var datasets = [
     //{ name: "none", filename: "", x: 0, y: 0, z: 0 },
