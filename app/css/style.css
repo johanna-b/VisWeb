@@ -1,13 +1,15 @@
+/* for compatibility of dat.gui and bootstrap*/
 .dg .c input[type=text] {
-
     line-height:normal;
 }
 .dg .c div {
     box-sizing: content-box;
 }
 
-/* Set height of the grid so .sidenav can be 100% (adjust if needed) */
-.row.content {height: 400px}
+/* set height of the grid so .sidebar_ui can be 100% */
+.row.content {
+    height: 400px
+}
 
 /* Set gray background color and 100% height */
 .sidebar_ui {

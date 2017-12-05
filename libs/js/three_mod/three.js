@@ -14649,7 +14649,7 @@
 
 			// indices
 
-			// 1. you need three indices to draw a single face
+			// 1. you need three_mod indices to draw a single face
 			// 2. a single segment consists of two faces
 			// 3. so we need to generate six (2*3) indices per segment
 
@@ -25295,7 +25295,7 @@
 
 					for ( j = 0; j < 3; j ++ ) {
 
-						// three edges per triangle, an edge is represented as (index1, index2)
+						// three_mod edges per triangle, an edge is represented as (index1, index2)
 						// e.g. the first triangle has the following edges: (0,1),(1,2),(2,0)
 
 						index1 = 3 * i + j;
@@ -26733,7 +26733,7 @@
 
 					}
 
-					/* three consecutive vertices in current polygon, <u,v,w> */
+					/* three_mod consecutive vertices in current polygon, <u,v,w> */
 
 					u = v; if ( nv <= u ) u = 0; /* previous */
 					v = u + 1; if ( nv <= v ) v = 0; /* new v    */
@@ -42668,7 +42668,7 @@
 	 - http://ideone.com/NoEbVM
 
 	This CubicPoly class could be used for reusing some variables and calculations,
-	but for three.js curve use, it could be possible inlined and flatten into a single function call
+	but for three_mod.js curve use, it could be possible inlined and flatten into a single function call
 	which can be placed in CurveUtils.
 	*/
 
