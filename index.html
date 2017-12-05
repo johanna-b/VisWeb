@@ -11,25 +11,23 @@
 
 <body>
 
-<div class="container-fluid">
-    <div class="row content">
+<div id="container">
 
-        <!-- UI on left -->
-        <div class="sidebar_ui">
-            <div id="div_ui_menu"></div>
-        </div>
-
-        <!-- 3D vis area -->
-        <div class="col-4">
-            <div id="div_vis3D"></div>
-        </div>
-
-        <!-- 2D vis area -->
-        <div class="col-2">
-            <div id="div_vis2D"></div>
-        </div>
-
+    <!-- right: 2D vis area. for layouting reasons first element in html -->
+    <div id="sliceview_ui">
+        <div id="div_vis2D"></div>
     </div>
+
+    <!-- UI on left -->
+    <div id="sidebar_ui">
+        <div id="div_ui_menu"></div>
+    </div>
+
+    <!-- 3D vis area -->
+    <div id="volview_ui">
+        <div id="div_vis3D"></div>
+    </div>
+
 </div>
 
 <!-- third party scripts -->

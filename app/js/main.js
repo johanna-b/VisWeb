@@ -59,8 +59,25 @@ var loadDatasetFinished = function(texture) {
     //voltex.maxFilter = THREE.LinearFilter;
 
     initVis2D(texture);
-    //initVis3D();
+    initVis3D();
 }
+
+
+// =================================
+//
+var onWindowResize = function(){
+    var vis_container = document.getElementById('div_vis3D');
+    //console.log( 'new size 3d view: ', vis_container.offsetWidth, vis_container.offsetHeight);
+
+    resize3DView(vis_container.offsetWidth, vis_container.offsetHeight);
+}
+
+// magic button
+var btn_obj = { magic:function(){
+    console.log("clicked");
+    //renderOrtho();
+    onWindowResize();
+}};
 
 
 // =================================

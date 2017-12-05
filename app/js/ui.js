@@ -10,6 +10,8 @@ var slice_slider;
 
 var initUI = function() {
 
+    window.addEventListener("resize", onWindowResize);
+
     // main UI =========================
 
     gui = new dat.GUI({ autoPlace: false, width: 200, height:600 });
@@ -60,12 +62,6 @@ var initUI = function() {
     folder_Slicer.open();
 
     // General UI ===============================
-
-    // magic button
-    var btn_obj = { magic:function(){
-        console.log("clicked");
-        renderOrtho();
-    }};
 
     gui.add(btn_obj,'magic');
 

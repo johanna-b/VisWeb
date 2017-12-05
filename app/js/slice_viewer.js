@@ -8,8 +8,8 @@
 // =================================
 
 var render_vars_2D = {
-    vis_width: 200,
-    vis_height: 200
+    vis_width: 240,
+    vis_height: 240
 }
 
 var sceneOrtho;
@@ -41,6 +41,7 @@ var initVis2D = function(texture) {
     // set up renderer
     rendererOrtho = new THREE.WebGLRenderer();
     rendererOrtho.setPixelRatio( window.devicePixelRatio );
+    //console.log('slice view: ' width, height);
     rendererOrtho.setSize( width, height);
     rendererOrtho.autoClear = false;
 
