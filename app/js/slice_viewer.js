@@ -7,7 +7,7 @@
 // variables
 // =================================
 
-var render_vars_2D = {
+var renderVars2D = {
     vis_width: 240,
     vis_height: 240
 }
@@ -24,14 +24,12 @@ var sliceGeomOrtho;
 
 // =================================
 // init slice viewer
-var initVis2D = function(texture) {
-
-    voltex = texture;
+var initVis2D = function() {
 
     var vis2D_container = document.getElementById('div_vis2D');
 
-    var width = render_vars_2D.vis_width;
-    var height = render_vars_2D.vis_height;
+    var width = renderVars2D.vis_width;
+    var height = renderVars2D.vis_height;
 
     // set up camera and scene
     cameraOrtho = new THREE.OrthographicCamera(- width / 2, width / 2, height / 2, - height / 2, 1, 10 );
@@ -47,7 +45,7 @@ var initVis2D = function(texture) {
 
     // create slice geometry and material for texturing
     sliceGeomOrtho = new THREE.PlaneGeometry(width, height);
-    var material = new THREE.MeshBasicMaterial( {map: voltex, color: 0xffffff, side: THREE.DoubleSide} );
+    var material = new THREE.MeshBasicMaterial( {map: volumeTex, color: 0xffffff, side: THREE.DoubleSide} );
     var plane = new THREE.Mesh( sliceGeomOrtho, material );
 
     sceneOrtho.add( plane );
@@ -60,7 +58,7 @@ var initVis2D = function(texture) {
 
     // init slider
     slice_slider.setValue(0);
-    slice_slider.max( Math.max(0, datasets[ui_params.dataset].z-1) );
+    slice_slider.max( Math.max(0, datasets[uiParams.dataset].z-1) );
 
     // render
     renderOrtho();
@@ -71,7 +69,7 @@ var initVis2D = function(texture) {
 // update displayed slice
 var updateSlice = function(sliceId) {
 
-    var dataset = datasets[ ui_params.dataset ];
+    var dataset = datasets[ uiParams.dataset ];
 
     // get index of slice in large 2D texture
     var xIdx = sliceId % dataset.slicesx;

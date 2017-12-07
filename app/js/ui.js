@@ -23,28 +23,31 @@ var initUI = function() {
     var folder_VR = gui.addFolder('Volume Renderer');
 
     // dataset combobox
-    var dataset_combo = folder_VR.add(ui_params, 'dataset', {none: -1, hydrogen: 0, bunny:1, sprite:2});
+    var dataset_combo = folder_VR.add(uiParams, 'dataset', {none: -1, hydrogen: 0, bunny:1, sprite:2});
 
     dataset_combo.onChange(function (value) {
         loadDataset(value);
     });
 
     // sample distance slider
-    var sample_dist_slider = folder_VR.add(ui_params, "sample_distance").min(1).max(50).step(1);
+    var sample_dist_slider = folder_VR.add(uiParams, "sample_distance").min(0.1).max(2.0).step(0.1);
 
     sample_dist_slider.onChange(function (value) {
         console.log('sample dist fire');
     });
 
+
     sample_dist_slider.onFinishChange(function (value) {
-        alert("The new value is " + value);
+        //alert("The new value is " + value);
+        updateSampleDistance();
     });
 
+
     // shading checkbox
-    folder_VR.add(ui_params, "shading");
+    folder_VR.add(uiParams, "shading");
 
     // background color
-    folder_VR.addColor(ui_params, 'background_color');
+    folder_VR.addColor(uiParams, 'background_color');
 
     folder_VR.open();
 
@@ -53,7 +56,7 @@ var initUI = function() {
     var folder_Slicer = gui.addFolder('Slice View');
 
     // slice id slider
-    slice_slider = folder_Slicer.add(ui_params, "slice_id").min(0).max(64).step(1);
+    slice_slider = folder_Slicer.add(uiParams, "slice_id").min(0).max(64).step(1);
 
     slice_slider.onChange(function (value) {
         updateSlice(value);
@@ -64,5 +67,7 @@ var initUI = function() {
     // General UI ===============================
 
     gui.add(btn_obj,'magic');
+
+    gui.add(btn_refresh,'refresh');
 
 }

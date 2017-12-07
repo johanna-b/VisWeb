@@ -6,7 +6,7 @@
 
 // data =========================
 
-var data_path = "app/data/processed/";
+var dataPath = "app/data/processed/";
 
 var datasets = [
     //{ name: "none", filename: "", x: 0, y: 0, z: 0 },
@@ -15,12 +15,14 @@ var datasets = [
     { name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0 }
 ];
 
+var datasetId = 0;
+
 
 // ui parameters =========================
 
-var ui_params = {
+var uiParams = {
     dataset: -1,
-    sample_distance: 25,
+    sample_distance: 1.0,
     shading: false,
     background_color: [ 0, 128, 255 ],
     slice_id: 0
@@ -29,7 +31,7 @@ var ui_params = {
 
 // data texture =========================
 
-var voltex;
+var volumeTex;
 
 
 // =================================
@@ -40,11 +42,16 @@ var voltex;
 // load dataset as one large 2D texture
 var loadDataset = function(dataid) {
 
-    console.log('loading ' + data_path + datasets[dataid].filename);
+    if ( dataid < 0 ){
+        return;
+    }
+    datasetId = dataid;
+
+    console.log('loading ' + dataPath + datasets[dataid].filename);
 
     // load image as texture
     var textureLoader = new THREE.TextureLoader();
-    var tex = textureLoader.load(data_path + datasets[dataid].filename, loadDatasetFinished);
+    var tex = textureLoader.load(dataPath + datasets[dataid].filename, loadDatasetFinished);
 
 }
 
@@ -53,12 +60,14 @@ var loadDataset = function(dataid) {
 // after data has loaded, init visualizations
 var loadDatasetFinished = function(texture) {
 
-    // texture params
-    //voltex.generateMipMaps = false;
-    //voltex.minFilter = THREE.LinearFilter;
-    //voltex.maxFilter = THREE.LinearFilter;
+    volumeTex = texture;
 
-    initVis2D(texture);
+    // texture params
+    volumeTex.generateMipMaps = false;
+    volumeTex.minFilter = THREE.LinearFilter;
+    volumeTex.maxFilter = THREE.LinearFilter;
+
+    initVis2D();
     initVis3D();
 }
 
@@ -76,7 +85,20 @@ var onWindowResize = function(){
 var btn_obj = { magic:function(){
     console.log("clicked");
     //renderOrtho();
-    onWindowResize();
+    //onWindowResize();
+
+    //ShaderLoader(vertPathBackFace, fragPathBackFace, onFirstPassShaderLoad, onLoadProgress, onLoadError);
+
+    showFirstPass = !showFirstPass;
+}};
+
+// magic button
+var btn_refresh = { refresh:function(){
+    console.log("refresh");
+    //renderOrtho();
+    //onWindowResize();
+
+    renderVolume();
 }};
 
 
