@@ -24,7 +24,7 @@ var uiParams = {
     sample_distance: 1.0,
     transfer_function: 0,
     shading: false,
-    background_color: [ 0, 128, 255 ],
+    background_color: [ 0, 0, 0 ],
     slice_id: 0
 };
 
@@ -82,7 +82,7 @@ var loadDatasetFinished = function(texture) {
 var updateTFTexture = function(v) {
 
     var val = uiParams.transfer_function;
-    
+
     // create TF data array - right now it's a simple gray ramp
     var tfArrayRgba = new Uint8Array(256 * 4);
 
@@ -108,7 +108,7 @@ var updateTFTexture = function(v) {
             // rgb
             tfArrayRgba[4 * i] = tfArrayRgba[4 * i + 1] = tfArrayRgba[4 * i + 2] = i;
             // opacity
-            tfArrayRgba[4 * i + 3] = i;
+            tfArrayRgba[4 * i + 3] = i/20;
         }
 
     // colorful ramp
