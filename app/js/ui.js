@@ -32,14 +32,19 @@ var initUI = function() {
     // sample distance slider
     var sample_dist_slider = folder_VR.add(uiParams, "sample_distance").min(0.1).max(2.0).step(0.1);
 
-    sample_dist_slider.onChange(function (value) {
-        //console.log('sample dist fire');
-    });
+    //sample_dist_slider.onChange(function (value) {
+    //});
 
 
     sample_dist_slider.onFinishChange(function (value) {
-        //alert("The new value is " + value);
         updateSampleDistance();
+    });
+
+    var tf_combo = folder_VR.add(uiParams, 'transfer_function', {ramp1: 0, ramp2:1, colors:2});
+
+    tf_combo.onChange(function (value) {
+        updateTFTexture(value);
+        renderVolume();
     });
 
 
@@ -47,7 +52,11 @@ var initUI = function() {
     folder_VR.add(uiParams, "shading");
 
     // background color
-    folder_VR.addColor(uiParams, 'background_color');
+    var background_color_chooser = folder_VR.addColor(uiParams, 'background_color');
+
+    background_color_chooser.onChange(function (value) {
+        updateBackgroundColor();
+    });
 
     folder_VR.open();
 

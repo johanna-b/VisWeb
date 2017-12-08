@@ -4,6 +4,7 @@
 
 uniform sampler2D backfaceTexture;  // back face positions in worldspace (from first pass)
 uniform sampler2D volumeTexture;    // texture holding volume data
+uniform sampler2D transferFunctionTexture; // color scale along x, ydim: 1
 
 uniform float sampleDistance;       // distance when sampling along ray
 uniform vec3 volumeInfo;            // x/y dim, numSlicesPerRow, numRows
@@ -69,14 +70,10 @@ vec4 sampleAs3DTexture( sampler2D tex, vec3 texCoord, float size, float slicesPe
 
 // =================================
 //
-vec4 applyTransferFunction(vec4 val){
+vec4 applyTransferFunction(float val){
 
-    //todo
-    if ( val.r > 0.4 ) {
-        return vec4(val.r);
-    } else {
-        return vec4(0.0);
-    }
+    vec4 color = texture2D( transferFunctionTexture, vec2( val, 0.5 ) );
+    return color;
 }
 
 
@@ -120,7 +117,7 @@ void main() {
         curSampleVal = sampleAs3DTexture( volumeTexture, curPos, volumeInfo.x, volumeInfo.y, volumeInfo.z );
 
         // apply transfer function
-        curSampleCol = applyTransferFunction( curSampleVal );
+        curSampleCol = applyTransferFunction( curSampleVal.r );
 
         // perform the accumulation of color and opacity (riemann sum of volume rendering integral)
         accumulatedColor.rgb += (1.0 - accumulatedColor.a) * curSampleCol.rgb * curSampleCol.a;

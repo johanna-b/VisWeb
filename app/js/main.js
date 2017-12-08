@@ -17,12 +17,12 @@ var datasets = [
 
 var datasetId = 0;
 
-
 // ui parameters =========================
 
 var uiParams = {
     dataset: -1,
     sample_distance: 1.0,
+    transfer_function: 0,
     shading: false,
     background_color: [ 0, 128, 255 ],
     slice_id: 0
@@ -32,7 +32,7 @@ var uiParams = {
 // data texture =========================
 
 var volumeTex;
-
+var tfTex;
 
 // =================================
 // methods
@@ -67,8 +67,86 @@ var loadDatasetFinished = function(texture) {
     volumeTex.minFilter = THREE.LinearFilter;
     volumeTex.maxFilter = THREE.LinearFilter;
 
+    updateTFTexture(uiParams.transfer_function);
+    tfTex.generateMipMaps = false;
+    tfTex.minFilter = THREE.LinearFilter;
+    tfTex.maxFilter = THREE.LinearFilter;
+
     initVis2D();
     initVis3D();
+}
+
+
+// =================================
+//
+var updateTFTexture = function(v) {
+
+    var val = uiParams.transfer_function;
+    
+    // create TF data array - right now it's a simple gray ramp
+    var tfArrayRgba = new Uint8Array(256 * 4);
+
+    // black/white ramp 1
+    if ( val == 0 ) {
+        console.log('1');
+        for (var i = 0; i < 256; i++) {
+            // rgb
+            tfArrayRgba[4 * i] = tfArrayRgba[4 * i + 1] = tfArrayRgba[4 * i + 2] = i;
+            // opacity
+            tfArrayRgba[4 * i + 3] = i;
+
+            // threshold
+            if (i < 100) {
+                tfArrayRgba[4 * i + 3] = 0;
+            }
+        }
+
+    // black/white ramp 2
+    } else if ( val == 1 ) {
+        console.log('2');
+        for (var i = 0; i < 256; i++) {
+            // rgb
+            tfArrayRgba[4 * i] = tfArrayRgba[4 * i + 1] = tfArrayRgba[4 * i + 2] = i;
+            // opacity
+            tfArrayRgba[4 * i + 3] = i;
+        }
+
+    // colorful ramp
+    } else {
+        console.log('3');
+        for (var i = 0; i < 256; i++) {
+            // rgb
+            if ( i < 150 ) {
+                tfArrayRgba[4 * i] = 255;
+                tfArrayRgba[4 * i + 1] = i;
+                tfArrayRgba[4 * i + 2] = i;
+                // opacity
+                tfArrayRgba[4 * i + 3] = i;
+            } else {
+                tfArrayRgba[4 * i] = 255 - (i-150);
+                tfArrayRgba[4 * i + 2] = 255;
+                tfArrayRgba[4 * i + 2] = i;
+                // opacity
+                tfArrayRgba[4 * i + 3] = i;
+            }
+
+            // threshold
+            if (i < 20) {
+                tfArrayRgba[4 * i + 3] = 0;
+            }
+        }
+    }
+
+    console.log(tfArrayRgba);
+
+    // create/update texture
+    tfTex = new THREE.DataTexture( tfArrayRgba, 256, 1, THREE.RGBAFormat );
+    tfTex.needsUpdate = true;
+
+    if ( shaderMaterialSecondPass != null ) {
+        shaderMaterialSecondPass.uniforms.transferFunctionTexture.value = tfTex;
+    }
+
 }
 
 
@@ -95,6 +173,9 @@ var btn_obj = { toggle_rendering:function(){
 // =================================
 // refresh button
 var btn_refresh = { refresh:function(){
+
+    tfTex.needsUpdate = true;
+    shaderMaterialSecondPass.uniforms.transferFunctionTexture.value = tfTex;
 
     renderOrtho();
     renderVolume();

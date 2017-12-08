@@ -25,6 +25,7 @@ var controls;
 var bufferscene;
 var bufferTexture;
 
+
 var shaderMaterialFirstPass;
 var shaderMaterialSecondPass;
 
@@ -59,7 +60,13 @@ var initVis3D = function() {
 
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(render_vars.vis_width, render_vars.vis_height); //window.innerWidth, window.innerHeight);
-    renderer.setClearColor( 0xa0a0a0 );
+    //renderer.setClearColor( 0xa0a0a0 );
+    //updateBackgroundColor();
+    var col = new THREE.Color(
+        uiParams.background_color[ 0 ]/255,
+        uiParams.background_color[ 1 ]/255,
+        uiParams.background_color[ 2 ]/255 );
+    renderer.setClearColor(col);
 
     // add renderer to HTML
     while (vis_container.hasChildNodes()) {
@@ -75,8 +82,8 @@ var initVis3D = function() {
         { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
 
     // load shaders
-    ShaderLoader(vertPathBackFace, fragPathBackFace, onFirstPassShaderLoad, onLoadProgress, onLoadError);
-    ShaderLoader(vertPathRaycast, fragPathRaycast, onSecondPassShaderLoad, onLoadProgress, onLoadError);
+    //ShaderLoader(vertPathBackFace, fragPathBackFace, onFirstPassShaderLoad, onLoadProgress, onLoadError);
+    //ShaderLoader(vertPathRaycast, fragPathRaycast, onSecondPassShaderLoad, onLoadProgress, onLoadError);
 
     // populate scene
     var geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -109,10 +116,9 @@ var initVis3D = function() {
         renderVolume();
     } );
 
-    //renderer.render( scene, camera );
-    onWindowResize();
+    // loads shaders and renders the scene when done
+    loadShaderAndRender();
 }
-
 
 
 // =================================
@@ -158,7 +164,6 @@ var resize3DView = function(width, height) {
 
     console.log( 'resized: ', render_vars.vis_width, render_vars.vis_height);
 
-
     renderVolume();
 
 }
@@ -179,7 +184,6 @@ var animateVolume = function() {
 // =================================
 //
 var renderVolume = function() {
-    console.log('render');
 
     renderer.clear();
     renderer.clearDepth();
@@ -192,6 +196,13 @@ var renderVolume = function() {
 
         renderer.render(scene, camera);
     }
+}
+
+
+// =================================
+//
+var loadShaderAndRender = function() {
+    ShaderLoader(vertPathBackFace, fragPathBackFace, onFirstPassShaderLoad, onLoadProgress, onLoadError);
 }
 
 
@@ -211,6 +222,8 @@ var ShaderLoader = function(vertex_url, fragment_url, onLoad, onProgress, onErro
 }
 
 
+// =================================
+//
 var onFirstPassShaderLoad = function(vertex_text, fragment_text){
 
     vertTextBackFace = vertex_text;
@@ -224,9 +237,14 @@ var onFirstPassShaderLoad = function(vertex_text, fragment_text){
         });
 
     cubeFirstPass.material = shaderMaterialFirstPass;
+
+    // load second pass shader
+    ShaderLoader(vertPathRaycast, fragPathRaycast, onSecondPassShaderLoad, onLoadProgress, onLoadError);
 }
 
 
+// =================================
+//
 var onSecondPassShaderLoad = function(vertex_text, fragment_text){
 
     vertTextRaycast = vertex_text;
@@ -247,6 +265,7 @@ var onSecondPassShaderLoad = function(vertex_text, fragment_text){
     var uniformsRaycast = {
         backfaceTexture: { type: 't', value: bufferTexture.texture },
         volumeTexture: { type: 't', value: volumeTex },
+        transferFunctionTexture: { type: 't', value: tfTex },
         sampleDistance: { value: sampleDist },
         volumeInfo: { type: "v3", value: volInfo }
     };
@@ -256,14 +275,21 @@ var onSecondPassShaderLoad = function(vertex_text, fragment_text){
             uniforms: uniformsRaycast,
             vertexShader:   vertTextRaycast,
             fragmentShader: fragTextRaycast,
-            side: THREE.FrontSide
+            side: THREE.FrontSide,
+            //blending: THREE.NormalBlending,
+            //depthTest: false,
+            transparent: true
         });
 
     cubeSecondPass.material = shaderMaterialSecondPass;
 
+    onWindowResize();
 }
 
-var updateSampleDistance = function(val){
+
+// =================================
+//
+var updateSampleDistance = function( val ) {
 
     var sampleDist = uiParams.sample_distance / (Math.max(x, y, z));
     shaderMaterialSecondPass.uniforms.sampleDistance.value = sampleDist;
@@ -272,13 +298,35 @@ var updateSampleDistance = function(val){
 }
 
 
-var onLoadProgress = function(xhr){
+// =================================
+//
+var updateBackgroundColor = function() {
+
+    var col = new THREE.Color(
+        uiParams.background_color[ 0 ]/255,
+        uiParams.background_color[ 1 ]/255,
+        uiParams.background_color[ 2 ]/255 );
+
+    renderer.setClearColor(col);
+
+    renderVolume();
+}
+
+
+// =================================
+//
+var onLoadProgress = function( xhr ) {
 
 }
 
-var onLoadError = function(xhr){
+
+// =================================
+//
+var onLoadError = function( xhr ) {
     console.log('loading error');
 }
+
+
 
 
 
