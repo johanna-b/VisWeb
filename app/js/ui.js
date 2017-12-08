@@ -33,7 +33,7 @@ var initUI = function() {
     var sample_dist_slider = folder_VR.add(uiParams, "sample_distance").min(0.1).max(2.0).step(0.1);
 
     sample_dist_slider.onChange(function (value) {
-        console.log('sample dist fire');
+        //console.log('sample dist fire');
     });
 
 
@@ -66,7 +66,7 @@ var initUI = function() {
 
     // General UI ===============================
 
-    gui.add(btn_obj,'magic');
+    gui.add(btn_obj,'toggle_rendering');
 
     gui.add(btn_refresh,'refresh');
 

@@ -81,23 +81,22 @@ var onWindowResize = function(){
     resize3DView(vis_container.offsetWidth, vis_container.offsetHeight);
 }
 
-// magic button
-var btn_obj = { magic:function(){
-    console.log("clicked");
-    //renderOrtho();
-    //onWindowResize();
 
-    //ShaderLoader(vertPathBackFace, fragPathBackFace, onFirstPassShaderLoad, onLoadProgress, onLoadError);
+// =================================
+// magic button
+var btn_obj = { toggle_rendering:function(){
 
     showFirstPass = !showFirstPass;
+
+    renderVolume();
 }};
 
-// magic button
-var btn_refresh = { refresh:function(){
-    console.log("refresh");
-    //renderOrtho();
-    //onWindowResize();
 
+// =================================
+// refresh button
+var btn_refresh = { refresh:function(){
+
+    renderOrtho();
     renderVolume();
 }};
 

@@ -25,8 +25,6 @@ var controls;
 var bufferscene;
 var bufferTexture;
 
-//var vertShaderBoundingBox;
-//var fragShaderBackFace;
 var shaderMaterialFirstPass;
 var shaderMaterialSecondPass;
 
@@ -240,10 +238,17 @@ var onSecondPassShaderLoad = function(vertex_text, fragment_text){
 
     var sampleDist = uiParams.sample_distance / (Math.max(x, y, z));
 
+    var volInfo = new THREE.Vector3(
+        datasets[datasetId].x, // volume dim x/y in voxel
+        datasets[datasetId].slicesx, // num slices per row
+        datasets[datasetId].slicesy // num rows
+    );
+
     var uniformsRaycast = {
         backfaceTexture: { type: 't', value: bufferTexture.texture },
+        volumeTexture: { type: 't', value: volumeTex },
         sampleDistance: { value: sampleDist },
-        volumeTexture: { type: 't', value: volumeTex }
+        volumeInfo: { type: "v3", value: volInfo }
     };
 
     shaderMaterialSecondPass =
