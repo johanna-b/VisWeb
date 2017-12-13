@@ -28,14 +28,16 @@ vec2 computeSlicePositionInTexCoords( float sliceIdx, float slicesPerRow, vec2 s
 
 // =================================
 // sample large flat 2D texture containing individual slices as a 3D volume
-vec4 sampleAs3DTexture( sampler2D tex, vec3 texCoord, float size, float slicesPerRow, float numRows ) {
+vec4 sampleAs3DTexture( sampler2D tex, vec3 textCoord, float size, float slicesPerRow, float numRows ) {
     // tex is a 2D texture containing slices of the original 3D volume
     // texCoord is sample position within volume [0..1]
     // size is x/y dim of volume in voxels (assumed x and y dim is the same)
     // numRows is number of rows in 2D texture
     // slicesPerRow is number of slices in one row in 2D texture
 
-    float sliceIdxZFloat = texCoord.z * size;   // slice position [e.g., 35.7]
+    vec3 tCoord = textCoord;
+
+    float sliceIdxZFloat = tCoord.z * (size - 1.0);   // slice position [e.g., 35.7]
     float sliceIdxZ  = floor( sliceIdxZFloat ); // lower slice position [e.g., 35]
     float zOffset = fract( sliceIdxZFloat );    // actual sample position between lower and upper slice [e.g., 0.7]
 
@@ -45,20 +47,13 @@ vec4 sampleAs3DTexture( sampler2D tex, vec3 texCoord, float size, float slicesPe
     vec2 slice0OffsetInTexCoords = computeSlicePositionInTexCoords( sliceIdxZ, slicesPerRow, sliceSizeInTexCoords ); // [e.g., slicesize * (3,2)] - index between 0 an 1
     vec2 slice1OffsetInTexCoords = computeSlicePositionInTexCoords( sliceIdxZ + 1.0, slicesPerRow, sliceSizeInTexCoords );
 
-    slice0OffsetInTexCoords.y = 1.0 - slice0OffsetInTexCoords.y; // invert y offset, to adjust to data storage format
-    slice1OffsetInTexCoords.y = 1.0 - slice1OffsetInTexCoords.y;
+    slice0OffsetInTexCoords.y = 1.0 - (sliceSizeInTexCoords.y + slice0OffsetInTexCoords.y); // invert y offset, to adjust to data storage format
+    slice1OffsetInTexCoords.y = 1.0 - (sliceSizeInTexCoords.y + slice1OffsetInTexCoords.y);
 
     // compute tex coord offset within a z slice
     vec2 offsetWithinSliceInTexCoords = vec2(0.0);
-    offsetWithinSliceInTexCoords.x = texCoord.x * sliceSizeInTexCoords.x;
-    offsetWithinSliceInTexCoords.y = (1.0 - texCoord.y) * sliceSizeInTexCoords.y;
-
-    /*
-    vec2 pixelSizeInTexCoords = sliceSizeInTexCoords / size;               // [e.g. (1/16) / 128
-    vec2 sliceSizeInnerInTexCoords = pixelSizeInTexCoords * (size - 1.0);  // space of size pixels
-    uv.x = pixelSizeInTexCoords.x + texCoord.x * sliceSizeInnerInTexCoords.x;
-    uv.y = ( pixelSizeInTexCoords.y ) + (1.0-texCoord.y) * sliceSizeInnerInTexCoords.y;
-    */
+    offsetWithinSliceInTexCoords.x = tCoord.x * sliceSizeInTexCoords.x;
+    offsetWithinSliceInTexCoords.y = (1.0 - tCoord.y) * sliceSizeInTexCoords.y;
 
     // sample texture
     vec4 slice0Color = texture2D(tex, slice0OffsetInTexCoords + offsetWithinSliceInTexCoords);
@@ -113,6 +108,15 @@ void main() {
     // sample along the ray
     for ( int i = 0; i < 9999; i++ ) {
 
+/*
+        if ( curPos.z < 0.05 ){
+            accumulatedColor.xyz = curPos.zzz;
+        } else {
+            accumulatedColor.xyz = curPos;
+        }
+        accumulatedColor.w = 1.0;
+        break;
+*/
         // sample texture
         curSampleVal = sampleAs3DTexture( volumeTexture, curPos, volumeInfo.x, volumeInfo.y, volumeInfo.z );
 
@@ -129,6 +133,9 @@ void main() {
 
         // early ray termination if opacity is reached or ray has left volume
         if ( accumulatedColor.w > 0.95 || accumulatedLength >= rayLength) {
+            break;
+        }
+        if ( curPos.z < 0.0 || curPos.z > 1.0 ) {
             break;
         }
     }

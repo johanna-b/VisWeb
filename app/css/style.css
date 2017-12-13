@@ -10,7 +10,7 @@
 /* Set gray background color and 100% height */
 #sidebar_ui {
     float: left;
-    width:220px;
+    width: 250px;
     background-color: #f1f1f1;
     height: 100%;
     padding: 5px;
@@ -30,7 +30,7 @@
 #volview_ui {
     background-color: #e1e1e1;
     padding: 5px;
-    margin: 0px 250px 0px 220px;
+    margin: 0px 250px 0px 250px;
 }
 
 #container {

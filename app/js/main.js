@@ -10,9 +10,9 @@ var dataPath = "app/data/processed/";
 
 var datasets = [
     //{ name: "none", filename: "", x: 0, y: 0, z: 0 },
-    { name: "hydrogen", filename: "hydrogen3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8 },
-    { name: "bunny", filename: "bunny3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8 },
-    { name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0 }
+    {name: "hydrogen", filename: "hydrogen3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
+    {name: "bunny", filename: "bunny3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
+    {name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0}
 ];
 
 var datasetId = 0;
@@ -25,7 +25,9 @@ var uiParams = {
     transfer_function: 0,
     shading: false,
     background_color: [ 0, 0, 0 ],
-    slice_id: 0
+    slice_id: 0,
+    show_frontfaces: false,
+    move_light: false
 };
 
 
@@ -34,31 +36,32 @@ var uiParams = {
 var volumeTex;
 var tfTex;
 
+
 // =================================
 // methods
 // =================================
 
 // =================================
 // load dataset as one large 2D texture
-var loadDataset = function(dataid) {
+var loadDataset = function ( dataid ) {
 
-    if ( dataid < 0 ){
+    if ( dataid < 0 ) {
         return;
     }
     datasetId = dataid;
 
-    console.log('loading ' + dataPath + datasets[dataid].filename);
+    console.log( 'loading ' + dataPath + datasets[ dataid ].filename );
 
     // load image as texture
     var textureLoader = new THREE.TextureLoader();
-    var tex = textureLoader.load(dataPath + datasets[dataid].filename, loadDatasetFinished);
+    var tex = textureLoader.load( dataPath + datasets[ dataid ].filename, loadDatasetFinished );
 
 }
 
 
 // =================================
 // after data has loaded, init visualizations
-var loadDatasetFinished = function(texture) {
+var loadDatasetFinished = function ( texture ) {
 
     volumeTex = texture;
 
@@ -67,7 +70,10 @@ var loadDatasetFinished = function(texture) {
     volumeTex.minFilter = THREE.LinearFilter;
     volumeTex.maxFilter = THREE.LinearFilter;
 
-    updateTFTexture(uiParams.transfer_function);
+    volumeTex.wrapS = THREE.ClampToEdgeWrapping;
+    volumeTex.wrapT = THREE.ClampToEdgeWrapping;
+
+    updateTFTexture( uiParams.transfer_function );
     tfTex.generateMipMaps = false;
     tfTex.minFilter = THREE.LinearFilter;
     tfTex.maxFilter = THREE.LinearFilter;
@@ -79,65 +85,63 @@ var loadDatasetFinished = function(texture) {
 
 // =================================
 //
-var updateTFTexture = function(v) {
+var updateTFTexture = function ( v ) {
 
     var val = uiParams.transfer_function;
 
     // create TF data array - right now it's a simple gray ramp
-    var tfArrayRgba = new Uint8Array(256 * 4);
+    var tfArrayRgba = new Uint8Array( 256 * 4 );
 
     // black/white ramp 1
     if ( val == 0 ) {
-        console.log('1');
-        for (var i = 0; i < 256; i++) {
+        console.log( '1' );
+        for ( var i = 0; i < 256; i++ ) {
             // rgb
-            tfArrayRgba[4 * i] = tfArrayRgba[4 * i + 1] = tfArrayRgba[4 * i + 2] = i;
+            tfArrayRgba[ 4 * i ] = tfArrayRgba[ 4 * i + 1 ] = tfArrayRgba[ 4 * i + 2 ] = i;
             // opacity
-            tfArrayRgba[4 * i + 3] = i;
+            tfArrayRgba[ 4 * i + 3 ] = i;
 
             // threshold
-            if (i < 100) {
-                tfArrayRgba[4 * i + 3] = 0;
+            if ( i < 100 ) {
+                tfArrayRgba[ 4 * i + 3 ] = 0;
             }
         }
 
-    // black/white ramp 2
+        // black/white ramp 2
     } else if ( val == 1 ) {
-        console.log('2');
-        for (var i = 0; i < 256; i++) {
+        console.log( '2' );
+        for ( var i = 0; i < 256; i++ ) {
             // rgb
-            tfArrayRgba[4 * i] = tfArrayRgba[4 * i + 1] = tfArrayRgba[4 * i + 2] = i;
+            tfArrayRgba[ 4 * i ] = tfArrayRgba[ 4 * i + 1 ] = tfArrayRgba[ 4 * i + 2 ] = i;
             // opacity
-            tfArrayRgba[4 * i + 3] = i/20;
+            tfArrayRgba[ 4 * i + 3 ] = i / 20;
         }
 
-    // colorful ramp
+        // colorful ramp
     } else {
-        console.log('3');
-        for (var i = 0; i < 256; i++) {
+        console.log( '3' );
+        for ( var i = 0; i < 256; i++ ) {
             // rgb
             if ( i < 150 ) {
-                tfArrayRgba[4 * i] = 255;
-                tfArrayRgba[4 * i + 1] = i;
-                tfArrayRgba[4 * i + 2] = i;
+                tfArrayRgba[ 4 * i ] = 255;
+                tfArrayRgba[ 4 * i + 1 ] = i;
+                tfArrayRgba[ 4 * i + 2 ] = i;
                 // opacity
-                tfArrayRgba[4 * i + 3] = i;
+                tfArrayRgba[ 4 * i + 3 ] = i;
             } else {
-                tfArrayRgba[4 * i] = 255 - (i-150);
-                tfArrayRgba[4 * i + 2] = 255;
-                tfArrayRgba[4 * i + 2] = i;
+                tfArrayRgba[ 4 * i ] = 255 - (i - 150);
+                tfArrayRgba[ 4 * i + 2 ] = 255;
+                tfArrayRgba[ 4 * i + 2 ] = i;
                 // opacity
-                tfArrayRgba[4 * i + 3] = i;
+                tfArrayRgba[ 4 * i + 3 ] = i;
             }
 
             // threshold
-            if (i < 20) {
-                tfArrayRgba[4 * i + 3] = 0;
+            if ( i < 20 ) {
+                tfArrayRgba[ 4 * i + 3 ] = 0;
             }
         }
     }
-
-    console.log(tfArrayRgba);
 
     // create/update texture
     tfTex = new THREE.DataTexture( tfArrayRgba, 256, 1, THREE.RGBAFormat );
@@ -152,39 +156,33 @@ var updateTFTexture = function(v) {
 
 // =================================
 //
-var onWindowResize = function(){
-    var vis_container = document.getElementById('div_vis3D');
+var onWindowResize = function () {
+    var vis_container = document.getElementById( 'div_vis3D' );
     //console.log( 'new size 3d view: ', vis_container.offsetWidth, vis_container.offsetHeight);
 
-    resize3DView(vis_container.offsetWidth, vis_container.offsetHeight);
+    resize3DView( vis_container.offsetWidth, vis_container.offsetHeight );
 }
 
 
 // =================================
-// magic button
-var btn_obj = { toggle_rendering:function(){
-
-    showFirstPass = !showFirstPass;
-
-    renderVolume();
-}};
-
-
-// =================================
 // refresh button
-var btn_refresh = { refresh:function(){
+var btn_refresh = {
+    refresh: function () {
 
-    tfTex.needsUpdate = true;
-    shaderMaterialSecondPass.uniforms.transferFunctionTexture.value = tfTex;
+        tfTex.needsUpdate = true;
+        shaderMaterialSecondPass.uniforms.transferFunctionTexture.value = tfTex;
 
-    renderOrtho();
-    renderVolume();
-}};
+        renderOrtho();
+
+        renderVolume();
+    }
+};
 
 
 // =================================
 // auto run
 // =================================
+
 
 initUI();
 
