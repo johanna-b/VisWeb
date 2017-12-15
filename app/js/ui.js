@@ -56,7 +56,6 @@ var initUI = function () {
         renderVolume();
     } );
 
-
     // shading checkbox
     folder_VR.add( uiParams, "shading" );
 
@@ -103,8 +102,6 @@ var initUI = function () {
     //folder_Slicer.open();
 
     // General UI ===============================
-
-
 
     gui.add( btn_refresh, 'refresh' );
 

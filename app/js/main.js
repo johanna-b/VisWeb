@@ -84,7 +84,7 @@ var loadDatasetFinished = function ( texture ) {
 
 
 // =================================
-//
+// chose between 3 default transfer fuctions, updates tf texture
 var updateTFTexture = function ( v ) {
 
     var val = uiParams.transfer_function;
@@ -109,7 +109,6 @@ var updateTFTexture = function ( v ) {
 
         // black/white ramp 2
     } else if ( val == 1 ) {
-        console.log( '2' );
         for ( var i = 0; i < 256; i++ ) {
             // rgb
             tfArrayRgba[ 4 * i ] = tfArrayRgba[ 4 * i + 1 ] = tfArrayRgba[ 4 * i + 2 ] = i;
@@ -119,7 +118,6 @@ var updateTFTexture = function ( v ) {
 
         // colorful ramp
     } else {
-        console.log( '3' );
         for ( var i = 0; i < 256; i++ ) {
             // rgb
             if ( i < 150 ) {
@@ -157,9 +155,8 @@ var updateTFTexture = function ( v ) {
 // =================================
 //
 var onWindowResize = function () {
-    var vis_container = document.getElementById( 'div_vis3D' );
-    //console.log( 'new size 3d view: ', vis_container.offsetWidth, vis_container.offsetHeight);
 
+    var vis_container = document.getElementById( 'div_vis3D' );
     resize3DView( vis_container.offsetWidth, vis_container.offsetHeight );
 }
 

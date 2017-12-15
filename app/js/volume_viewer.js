@@ -7,11 +7,11 @@
 // variables
 // =================================
 
-var render_vars = {
-    vis_width: 500,
-    vis_height: 500,
-    vis_max_width: 1000,
-    vis_max_height: 1000
+var renderVars = {
+    visWidth: 500,
+    visHeight: 500,
+    visMaxWidth: 1000,
+    visMaxHeight: 1000
 
 }
 
@@ -44,19 +44,18 @@ var fragTextRaycast = "";
 var showFirstPass = false;
 
 var pointLight;
-var pivot;
+var lightPivot;
 
-var vis_container;
+var visContainer;
 
 var previousMousePosition;
-
 
 
 // =================================
 // methods
 // =================================
 
-var resetCamera = function ( ) {
+var resetCamera = function () {
     controls.reset();
 };
 
@@ -64,39 +63,34 @@ var resetCamera = function ( ) {
 //
 var initVis3D = function () {
 
-    vis_container = document.getElementById( 'div_vis3D' );
+    visContainer = document.getElementById( 'div_vis3D' );
 
+    // ==================
     // create basic scene / renderer / camera
+
     scene = new THREE.Scene();
 
-    camera = new THREE.OrthographicCamera(-3, 3, 3, -3 , -20, 20);
-    //camera = new THREE.PerspectiveCamera( 45, render_vars.vis_width / render_vars.vis_height, 0.1, 1000 );
+    //camera = new THREE.OrthographicCamera(-3, 3, 3, -3 , -20, 20);
+    camera = new THREE.PerspectiveCamera( 45, renderVars.visWidth / renderVars.visHeight, 0.1, 1000 );
     camera.position.z = 5;
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setSize( render_vars.vis_width, render_vars.vis_height );
+    renderer.setSize( renderVars.visWidth, renderVars.visHeight );
     var col = new THREE.Color(
         uiParams.background_color[ 0 ] / 255,
         uiParams.background_color[ 1 ] / 255,
         uiParams.background_color[ 2 ] / 255 );
     renderer.setClearColor( col );
 
-    // add renderer to HTML
-    while ( vis_container.hasChildNodes() ) {
-        vis_container.removeChild( vis_container.lastChild );
-    }
-    vis_container.appendChild( renderer.domElement );
-
     // create offscreen scene and texture
     offscreenBufferScene = new THREE.Scene();
 
     offscreenBufferTexture = new THREE.WebGLRenderTarget(
-        render_vars.vis_width, render_vars.vis_height,
+        renderVars.visWidth, renderVars.visHeight,
         {minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter} );
 
     // ==================
-    // populate scene
-
+    // create scene elements
 
     // bounding box geometry (for raycasting)
     boxGeometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -104,62 +98,24 @@ var initVis3D = function () {
     boxMeshFirstPass = new THREE.Mesh( boxGeometry, boxMaterial );
     boxMeshSecondPass = new THREE.Mesh( boxGeometry, boxMaterial );
 
-    // bounding box, light
+    // create bounding box, light
 
     // bounding box wireframe (for rendering bounding box)
     var edgesGeo = new THREE.EdgesGeometry( boxGeometry ); // or WireframeGeometry( geometry )
-    var lineMat = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
+    var lineMat = new THREE.LineBasicMaterial( {color: 0xffffff, linewidth: 2} );
     boxWireframe = new THREE.LineSegments( edgesGeo, lineMat );
-    scene.add( boxWireframe );
 
     // light
-    pivot = new THREE.Object3D();
+    lightPivot = new THREE.Object3D();
     var sphereGeom = new THREE.SphereGeometry( 0.1, 32, 16 );
-    pointLight = new THREE.PointLight( 0xffffff, 1, 20, 2);
-    pointLight.add( new THREE.Mesh( sphereGeom, new THREE.MeshBasicMaterial( { color: 0xffff00 } ) ) );
+    pointLight = new THREE.PointLight( 0xffffff, 1, 20, 2 );
+    pointLight.add( new THREE.Mesh( sphereGeom, new THREE.MeshBasicMaterial( {color: 0xffff00} ) ) );
     pointLight.position.set( 1, 1, 1 );
     //scene.add( pointLight );
-    pivot.add(pointLight);
-    scene.add(pivot);
+    lightPivot.add( pointLight );
 
-
-
-    offscreenBufferScene.add( boxMeshFirstPass );
-
-    scene.add( boxMeshSecondPass );
-
-    // checkerboard
-    // ground
-        // create checkerboard image
-        var imageCanvas = document.createElement( "canvas" );
-        var context = imageCanvas.getContext( "2d" );
-
-        imageCanvas.width = imageCanvas.height = 128;
-
-        context.fillStyle = "#CCC";
-        context.fillRect( 0, 0, 128, 128 );
-
-        context.fillStyle = "#fff";
-        context.fillRect(0, 0, 64, 64);
-        context.fillRect(64, 64, 64, 64);
-
-        // create texture
-        var textureCanvas = new THREE.Texture( imageCanvas,
-            THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
-        var materialCanvas = new THREE.MeshBasicMaterial( { map: textureCanvas } );
-
-        textureCanvas.needsUpdate = true;
-        textureCanvas.repeat.set( 10000, 10000 );
-
-        // geometry
-        var geometry = new THREE.PlaneGeometry( 100, 100 );
-
-        var meshCanvas = new THREE.Mesh( geometry, materialCanvas );
-        meshCanvas.scale.set( 100, 100, 100 );
-        meshCanvas.position.set(0, 0, -1);
-
-        scene.add(meshCanvas);
-
+    // create ground texture (checkerboard)
+    var groundMesh = createGroundMesh();
 
     // fog
     var fog_near = 1;
@@ -167,17 +123,75 @@ var initVis3D = function () {
     scene.fog = new THREE.Fog( 0x000000, fog_near, fog_far );
     //scene.fog = new THREE.FogExp2( 0x000000, 0.075 );
 
+    // ==================
+    // add scene elements
 
-    // TrackballControls OrbitControls
+    offscreenBufferScene.add( boxMeshFirstPass );
+
+    scene.add( boxMeshSecondPass );
+    scene.add( boxWireframe );
+    scene.add( lightPivot );
+    scene.add( groundMesh );
+
+    // ==================
+    // add renderer to HTML
+
+    while ( visContainer.hasChildNodes() ) {
+        visContainer.removeChild( visContainer.lastChild );
+    }
+    visContainer.appendChild( renderer.domElement );
+
+    // ==================
+    // Mouse controls
+
     controls = new THREE.TrackballControls( camera, renderer.domElement );
     controls.addEventListener( 'change', function () {
+
+        updateLightPos();
         renderVolume();
+
     } );
 
     // loads shaders and renders the scene when done
     loadShaderAndRender();
 
-    vis_container.addEventListener( 'mousedown', onMouseDown, false );
+    visContainer.addEventListener( 'mousedown', onMouseDown, false );
+}
+
+
+// =================================
+// create checkerboard texture, us for ground
+var createGroundMesh = function () {
+
+    // create checkerboard image
+    var imageCanvas = document.createElement( "canvas" );
+    var context = imageCanvas.getContext( "2d" );
+
+    imageCanvas.width = imageCanvas.height = 128;
+
+    context.fillStyle = "#CCC";
+    context.fillRect( 0, 0, 128, 128 );
+
+    context.fillStyle = "#fff";
+    context.fillRect( 0, 0, 64, 64 );
+    context.fillRect( 64, 64, 64, 64 );
+
+    // create texture
+    var textureCanvas = new THREE.Texture( imageCanvas,
+        THREE.UVMapping, THREE.RepeatWrapping, THREE.RepeatWrapping );
+    var materialCanvas = new THREE.MeshBasicMaterial( {map: textureCanvas} );
+
+    textureCanvas.needsUpdate = true;
+    textureCanvas.repeat.set( 10000, 10000 );
+
+    // geometry
+    var geometry = new THREE.PlaneGeometry( 100, 100 );
+
+    var meshCanvas = new THREE.Mesh( geometry, materialCanvas );
+    meshCanvas.scale.set( 100, 100, 100 );
+    meshCanvas.position.set( 0, 0, -1 );
+
+    return meshCanvas;
 }
 
 
@@ -185,44 +199,42 @@ var initVis3D = function () {
 //
 var resize3DView = function ( width, height ) {
 
-    console.log( 'new size 3d view: ', width, height );
-
     // if size wasn't changed, return
-    if ( width == render_vars.vis_width && height == render_vars.vis_height ) {
+    if ( width == renderVars.visWidth && height == renderVars.visHeight ) {
         return;
     }
 
-    var w = render_vars.vis_width;
-    var h = render_vars.vis_height;
+    var w = renderVars.visWidth;
+    var h = renderVars.visHeight;
     // update internal width
-    if ( width > 0 && width <= render_vars.vis_max_width ) {
+    if ( width > 0 && width <= renderVars.visMaxWidth ) {
         w = width;
     }
-    if ( height > 0 && height <= render_vars.vis_max_height ) {
+    if ( height > 0 && height <= renderVars.visMaxHeight ) {
         h = height;
     }
 
     /*
      if ( w < h ) {
-     render_vars.vis_width = w;
-     render_vars.vis_height = w;
+     renderVars.visWidth = w;
+     renderVars.visHeight = w;
      } else {
-     render_vars.vis_width = h;
-     render_vars.vis_height = h;
+     renderVars.visWidth = h;
+     renderVars.visHeight = h;
      }
      */
 
-    render_vars.vis_width = w;
-    render_vars.vis_height = w;
+    renderVars.visWidth = w;
+    renderVars.visHeight = w;
 
-    camera.aspect = render_vars.vis_width / render_vars.vis_height;
+    camera.aspect = renderVars.visWidth / renderVars.visHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( render_vars.vis_width, render_vars.vis_height );
+    renderer.setSize( renderVars.visWidth, renderVars.visHeight );
 
-    offscreenBufferTexture.setSize( render_vars.vis_width, render_vars.vis_height );
+    offscreenBufferTexture.setSize( renderVars.visWidth, renderVars.visHeight );
 
-    console.log( 'resized: ', render_vars.vis_width, render_vars.vis_height );
+    console.log( 'resized 3D view: ', renderVars.visWidth, renderVars.visHeight );
 
     renderVolume();
 
@@ -233,11 +245,7 @@ var resize3DView = function ( width, height ) {
 //
 var animateVolume = function () {
     requestAnimationFrame( animate );
-    //controls.update();
     renderVolume();
-    //renderer.render( scene, camera );
-    //cube.rotation.x += 0.1;
-    //cube.rotation.y += 0.1;
 }
 
 
@@ -260,6 +268,23 @@ var renderVolume = function () {
     }
 
     stats.end();
+}
+
+
+// =================================
+//
+var updateLightPos = function () {
+
+    // get light position in world coords
+    var lightPos = new THREE.Vector3();
+    pointLight.getWorldPosition( lightPos );
+
+    console.log( "camera pos:", camera.position );
+    console.log( "light pos:", lightPos );
+
+    // update renderer
+    shaderMaterialSecondPass.uniforms.lightPos.value = lightPos;
+    shaderMaterialSecondPass.uniforms.cameraPos.value = camera.position;
 }
 
 
@@ -326,12 +351,17 @@ var onSecondPassShaderLoad = function ( vertex_text, fragment_text ) {
         datasets[ datasetId ].slicesy // num rows
     );
 
+    console.log( "camera pos:", camera.position );
+    console.log( "light pos:", pointLight.position );
+
     var uniformsRaycast = {
         backfaceTexture: {type: 't', value: offscreenBufferTexture.texture},
         volumeTexture: {type: 't', value: volumeTex},
         transferFunctionTexture: {type: 't', value: tfTex},
         sampleDistance: {value: sampleDist},
-        volumeInfo: {type: "v3", value: volInfo}
+        volumeInfo: {type: "v3", value: volInfo},
+        cameraPos: {type: "v3", value: camera.position},
+        lightPos: {type: "v3", value: pointLight.position}
     };
 
     shaderMaterialSecondPass =
@@ -389,7 +419,6 @@ var onLoadProgress = function ( xhr ) {
 var onLoadError = function ( xhr ) {
     console.log( 'loading error' );
 }
-
 
 
 // =================================

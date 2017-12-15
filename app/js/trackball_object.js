@@ -1,6 +1,7 @@
 /**
  * author: johanna
  * created on: 12/12/17
+ * Trackball interaction on given object (e.g., for rotating the volume, not the camera)
  */
 
 var rotateStartPoint = new THREE.Vector3( 0, 0, 1 );
@@ -15,9 +16,9 @@ var rotationSpeed = 2;
 function onMouseDown( e ) {
 
     event.preventDefault();
-    vis_container.addEventListener( 'mousemove', onMouseMove, false );
-    vis_container.addEventListener( 'mouseup', onMouseUp, false );
-    vis_container.addEventListener( 'mouseout', onMouseOut, false );
+    visContainer.addEventListener( 'mousemove', onMouseMove, false );
+    visContainer.addEventListener( 'mouseup', onMouseUp, false );
+    visContainer.addEventListener( 'mouseout', onMouseOut, false );
 
     previousMousePosition = {
         x: e.offsetX,
@@ -25,8 +26,8 @@ function onMouseDown( e ) {
     };
 
     rotateStartPoint = rotateEndPoint = projectOnTrackball( 0, 0 );
-    console.log( rotateStartPoint );
-    console.log( camera.rotation );
+    //console.log( rotateStartPoint );
+    //console.log( camera.rotation );
 }
 
 
@@ -40,7 +41,7 @@ function onMouseMove( e ) {
     //handleRotation( boxMeshFirstPass );
     //handleRotation( boxMeshSecondPass );
     //handleRotation( boxWireframe );
-    handleRotation( pivot );
+    handleRotation( lightPivot );
 
     previousMousePosition = {
         x: e.offsetX,
@@ -63,6 +64,7 @@ var handleRotation = function ( mesh ) {
 
     rotateEndPoint = rotateStartPoint;
 
+    updateLightPos();
     renderVolume();
 };
 
@@ -70,18 +72,18 @@ var handleRotation = function ( mesh ) {
 // =================================
 // remove mouse move listener
 function onMouseUp( event ) {
-    vis_container.removeEventListener( 'mousemove', onMouseMove, false );
-    vis_container.removeEventListener( 'mouseup', onMouseUp, false );
-    vis_container.removeEventListener( 'mouseout', onMouseOut, false );
+    visContainer.removeEventListener( 'mousemove', onMouseMove, false );
+    visContainer.removeEventListener( 'mouseup', onMouseUp, false );
+    visContainer.removeEventListener( 'mouseout', onMouseOut, false );
 }
 
 
 // =================================
 // remove mouse move listener
 function onMouseOut( event ) {
-    vis_container.removeEventListener( 'mousemove', onMouseMove, false );
-    vis_container.removeEventListener( 'mouseup', onMouseUp, false );
-    vis_container.removeEventListener( 'mouseout', onMouseOut, false );
+    visContainer.removeEventListener( 'mousemove', onMouseMove, false );
+    visContainer.removeEventListener( 'mouseup', onMouseUp, false );
+    visContainer.removeEventListener( 'mouseout', onMouseOut, false );
 }
 
 
@@ -89,8 +91,8 @@ function onMouseOut( event ) {
 //
 function projectOnTrackball( touchX, touchY ) {
 
-    var windowHalfX = render_vars.vis_width / 2;
-    var windowHalfY = render_vars.vis_height / 2;
+    var windowHalfX = renderVars.visWidth / 2;
+    var windowHalfY = renderVars.visHeight / 2;
 
     var mouseOnBall = new THREE.Vector3();
 

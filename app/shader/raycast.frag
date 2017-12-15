@@ -9,6 +9,9 @@ uniform sampler2D transferFunctionTexture; // color scale along x, ydim: 1
 uniform float sampleDistance;       // distance when sampling along ray
 uniform vec3 volumeInfo;            // x/y dim, numSlicesPerRow, numRows
 
+uniform vec3 cameraPos;
+uniform vec3 lightPos;
+
 varying vec3 worldSpaceCoords;      // world space position of fragment (frontface)
 varying vec4 projectedCoords;       // screen space position of fragment in clip space -1..1
 
@@ -73,6 +76,23 @@ vec4 applyTransferFunction(float val){
 
 
 // =================================
+// Compute the Normal around the current voxel
+vec3 getNormal(vec3 pos, float cellSize){
+    float xdelta = (sampleAs3DTexture( volumeTexture, pos - vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
+                    (sampleAs3DTexture( volumeTexture, pos + vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
+    float ydelta = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
+                    (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
+    float zdelta = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
+                    (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
+
+    vec3 n = vec3( xdelta, ydelta, zdelta );
+    //texture3D(volumeTexture, pos - vec3(cellSize, 0.0, 0.0)).w - texture3D(VolumeData, pos + vec3(cellSize, 0.0, 0.0)).w,
+
+    return normalize(n);
+ }
+
+
+// =================================
 //
 vec4 applyShading(vec4 val){
     //todo
@@ -108,15 +128,6 @@ void main() {
     // sample along the ray
     for ( int i = 0; i < 9999; i++ ) {
 
-/*
-        if ( curPos.z < 0.05 ){
-            accumulatedColor.xyz = curPos.zzz;
-        } else {
-            accumulatedColor.xyz = curPos;
-        }
-        accumulatedColor.w = 1.0;
-        break;
-*/
         // sample texture
         curSampleVal = sampleAs3DTexture( volumeTexture, curPos, volumeInfo.x, volumeInfo.y, volumeInfo.z );
 
