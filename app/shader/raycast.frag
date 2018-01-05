@@ -22,6 +22,8 @@ const float specularContribution = 0.8;
 const float shininess = 16.0;
 const float cellSize = 1.0 / 128.0;
 
+//TODO: volumetric shadows see here: https://github.com/nopjia/WebGL-Volumetric/blob/master/shaders/vol-fs.glsl
+
 vec3 normRayDir;
 
 // =================================
