@@ -15,6 +15,14 @@ uniform vec3 lightPos;
 varying vec3 worldSpaceCoords;      // world space position of fragment (frontface)
 varying vec4 projectedCoords;       // screen space position of fragment in clip space -1..1
 
+// TODO: clean up magic numbers used for shading
+const float ambientContribution = 0.5;
+const float diffuseContribution = 0.8;
+const float specularContribution = 0.8;
+const float shininess = 16.0;
+const float cellSize = 1.0 / 128.0;
+
+vec3 normRayDir;
 
 // =================================
 // compute tex coord for slice (origin of slice)
@@ -78,15 +86,20 @@ vec4 applyTransferFunction(float val){
 // =================================
 // Compute the Normal around the current voxel
 vec3 getNormal(vec3 pos, float cellSize){
-    float xdelta = (sampleAs3DTexture( volumeTexture, pos - vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
-                    (sampleAs3DTexture( volumeTexture, pos + vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
-    float ydelta = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
-                    (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
-    float zdelta = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w -
-                    (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).w;
+
+    float x_1 = (sampleAs3DTexture( volumeTexture, pos - vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float x_2 = (sampleAs3DTexture( volumeTexture, pos + vec3(cellSize, 0.0, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float xdelta = x_1 - x_2;
+
+    float y_1 = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float y_2 = (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, cellSize, 0.0), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float ydelta = y_1 - y_2;
+
+    float z_1 = (sampleAs3DTexture( volumeTexture, pos - vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float z_2 = (sampleAs3DTexture( volumeTexture, pos + vec3(0.0, 0.0, cellSize), volumeInfo.x, volumeInfo.y, volumeInfo.z)).r;
+    float zdelta = z_1 - z_2;
 
     vec3 n = vec3( xdelta, ydelta, zdelta );
-    //texture3D(volumeTexture, pos - vec3(cellSize, 0.0, 0.0)).w - texture3D(VolumeData, pos + vec3(cellSize, 0.0, 0.0)).w,
 
     return normalize(n);
  }
@@ -94,9 +107,36 @@ vec3 getNormal(vec3 pos, float cellSize){
 
 // =================================
 //
-vec4 applyShading(vec4 val){
-    //todo
-    return vec4(0.0);
+vec4 applyShading( vec4 sampleCol, vec3 samplePos ){
+
+    vec4 shadedCol = sampleCol;
+
+    // ambient
+    float ambientPart = ambientContribution;
+
+    // diffuse
+    vec3 lightVec = normalize( lightPos - samplePos );
+    vec3 viewVec = normalize( -normRayDir );
+    vec3 gradientVec = getNormal( samplePos, cellSize );
+
+    float lambertian = max( dot( lightVec, gradientVec ), 0.0 );
+    float diffusePart = diffuseContribution * lambertian;
+
+    // specular
+    float specularPart = 0.0;
+
+    if ( lambertian > 0.0 ) {
+        vec3 reflectDir = reflect( -lightVec, gradientVec );
+        float specAngle = max( dot(reflectDir, viewVec ), 0.0 );
+
+        float specular = pow( specAngle, shininess / 4.0 );
+        specularPart = specularContribution * specular;
+    }
+
+    // accumulate and apply light intensity
+    shadedCol.rgb = shadedCol.rgb * ( ambientPart + diffusePart + specularPart );
+
+    return shadedCol;
 }
 
 
@@ -114,6 +154,7 @@ void main() {
 
     vec3 rayDir = endPos - startPos; // ray from front to back face
     float rayLength = length( rayDir );
+    normRayDir = normalize(rayDir);
 
     vec3 stepVec = normalize( rayDir ) * sampleDistance; // one step along the ray
     float stepLength = length( stepVec );
@@ -122,7 +163,7 @@ void main() {
     vec4 curSampleVal = vec4( 0.0 ); // current samples density value
     vec4 curSampleCol = vec4( 0.0 ); // current sample with applied transfer function
 
-    vec4 accumulatedColor = vec4(0.0); // accumulated color/opacity along the ray (front to back)
+    vec4 accumulatedColor = vec4( 0.0 ); // accumulated color/opacity along the ray (front to back)
     float accumulatedLength = 0.0;
 
     // sample along the ray
@@ -134,8 +175,10 @@ void main() {
         // apply transfer function
         curSampleCol = applyTransferFunction( curSampleVal.r );
 
+        curSampleCol = applyShading(curSampleCol, curPos);
+
         // perform the accumulation of color and opacity (riemann sum of volume rendering integral)
-        accumulatedColor.rgb += (1.0 - accumulatedColor.a) * curSampleCol.rgb * curSampleCol.a;
+        accumulatedColor.rgb += ( 1.0 - accumulatedColor.a ) * curSampleCol.rgb * curSampleCol.a;
         accumulatedColor.a += curSampleCol.a;
 
         // update sample position and length along ray
