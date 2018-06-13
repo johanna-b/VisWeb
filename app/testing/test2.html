@@ -29,7 +29,7 @@
         var time = performance.now() / 1000;
         context.clearRect( 0, 0, canvas.width, canvas.height );
         stats.begin();
-        for ( var i = 0; i < 2000; i ++ ) {
+        for ( var i = 0; i < 20; i ++ ) {
             var x = Math.cos( time + i * 0.01 ) * 196 + canvas.width/2;
             var y = Math.sin( time + i * 0.01234 ) * 196 + canvas.width/2;
             context.beginPath();
