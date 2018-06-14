@@ -12,7 +12,8 @@ var datasets = [
     //{ name: "none", filename: "", x: 0, y: 0, z: 0 },
     {name: "hydrogen", filename: "hydrogen3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
     {name: "bunny", filename: "bunny3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
-    {name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0}
+    {name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0},
+    {name: "hydrogen2", filename: "tiledVol.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8}
 ];
 
 var datasetId = 0;
