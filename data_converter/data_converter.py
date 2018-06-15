@@ -3,6 +3,7 @@
 import sys
 import math
 import array
+import os
 from PIL import Image
 import numpy as np
 import pydicom
@@ -111,12 +112,35 @@ def slices_to_single_file(tilesize, dirname, filename, num_slices):
     #imout.show()
     imout.save(dirname + "tiledVol" + ".png", "PNG")
 
-def DICOM_to_png(dirname, filename):
-    dataset = pydicom.dcmread(dirname+filename)
+def DICOM_to_png(dirname):
+    print ("Loading DICOM files in ", dirname)
+    try:
+        files = sorted(os.listdir(dirname))
+        pass
+    except IOError as e:
+        print ("Unable to open file: Check if file exists or is in directory")
+    gridsize = int((uppersquare(len(files))**0.5))
+    dataset = pydicom.dcmread(dirname+sorted(files)[0])
+    image_size = tuple([gridsize*x for x in np.shape(dataset.pixel_array)])
+    finalIm = np.zeros(image_size)
+    for i in range(0, len(files)-1):
+        break
+    rows = int(dataset.Rows)
+    cols = int(dataset.Columns)
 
+def DICOM_viewer(dirname, filenum):
+    print ("Loading DICOM files in ", dirname)
+    try:
+        files = os.listdir(dirname)
+        pass
+    except IOError as e:
+        print ("Unable to open file: Check if file exists or is in directory")
+
+    gridsize = int((uppersquare(len(files))**0.5))
+    dataset = pydicom.dcmread(dirname+sorted(files)[filenum-1])
     #Normal mode:
     print()
-    print("Filename.........:", filename)
+    print("Filename.........:", "IMG"+str(filenum).zfill(5))
     print("Storage type.....:", dataset.SOPClassUID)
     print()
 
@@ -138,25 +162,37 @@ def DICOM_to_png(dirname, filename):
     # use .get() if not sure the item exists, and want a default value if missing
     print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
 
+    print (type(dataset.pixel_array[0][0]))
     # plot the image using matplotlib
     plt.imshow(dataset.pixel_array, cmap=plt.cm.bone)
     plt.show()
 
+def uppersquare(num):
+    if((num**(0.5))%1 == 0): return num
+    #floor_int = math.floor(num**(0.5))
+    ceil_int = math.ceil(num**(0.5))
+    return ceil_int*ceil_int
+    #floor_sq = floor_int * floor_int
+    #ceil_sq = ceil_int * ceil_int
+    #if num - floor_sq < ceil_sq-num : return floor_sq
+    #else: return ceil_sq
 
 print('========== Starting converter ==========')
 
-dirname = "C:/Users/sushachawal/DICOMs/CT/"
+dirname = "C:/Users/sushachawal/DICOMs/MRT1KM/"
 #dirname = "/johanna/work/development/code/other/vis_web/data/raw/bunny/"
 #raw16_to_png(512, 512, 361, dirname)
 
 #dirname = "/johanna/work/development/code/other/vis_web/data/raw/hydrogen/"
-filename = "IMG00184"
+#filename = "" #sys.argv[1]
 # raw16vol_to_png(256, 256, 110, dirname, filename)
 #
 # filename = "output_"
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-DICOM_to_png(dirname, filename)
+DICOM_to_png(dirname)
+DICOM_viewer(dirname, int(sys.argv[1]))
+
 
 print('=========== Converting done! ===========')
