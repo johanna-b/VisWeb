@@ -175,14 +175,17 @@ def DICOM_to_png(dirname):
     print ("Maximum value in finalIm is: ", np.amax(finalIm))
 
     finalIm = finalIm * (255.0/np.amax(finalIm))
-
+    finalIm[finalIm>255.0] = 255.0
     print ("Minimum value in finalIm is: ", np.amin(finalIm))
     print ("Maximum value in finalIm is: ", np.amax(finalIm))
 
     finalIm = finalIm.astype(np.int)
-    #print(finalIm[250:255, 324:330])
-
-    scipy.misc.toimage(finalIm, cmin=0.0, cmax=255.0).save('outfile.png')
+    im = Image.fromarray(finalIm)
+    im = im.convert('L')
+    im.show()
+    im.save("test.png")
+    #im = scipy.misc.toimage(finalIm, cmin=0.0, cmax=256.0)
+    #scipy.misc.toimage(finalIm, cmin=0.0, cmax=255.0).save('outfile.png')
 
     # NOTE: PIL save function not working for some reason. Workaround is above
     # im = Image.fromarray(finalIm)
@@ -240,7 +243,7 @@ def uppersquare(num):
 
 print('========== Starting converter ==========')
 
-dirname = "C:/Users/sushachawal/DICOMs/MRT1KM/"
+dirname = "C:/Users/sushachawal/DICOMs/CTA/SRS00003/"
 #dirname = "/johanna/work/development/code/other/vis_web/data/raw/bunny/"
 #raw16_to_png(512, 512, 361, dirname)
 
