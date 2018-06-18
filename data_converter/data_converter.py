@@ -119,14 +119,58 @@ def DICOM_to_png(dirname):
         pass
     except IOError as e:
         print ("Unable to open file: Check if file exists or is in directory")
+
+    # We aim to align the final slices in a square with zeros at the end
+    # where a slice is not present. (The number of slices will not necessarily
+    # be a square number)
     gridsize = int((uppersquare(len(files))**0.5))
-    dataset = pydicom.dcmread(dirname+sorted(files)[0])
+
+    # Read the first image for data of all the slices
+    # TODO: Need functionality to ensure that all the scans
+    # in one file are indeed of the same scan
+    dataset = pydicom.dcmread(dirname+files[0])
+
+    #---------------------------------------------------------------------------
+    # Print data of Patient
+    print()
+    #print("Filename.........:", "IMG"+str(filenum).zfill(5))
+    print("Storage type.....:", dataset.SOPClassUID)
+    print()
+
+    pat_name = dataset.PatientName
+    display_name = pat_name.family_name + ", " + pat_name.given_name
+    print("Patient's name...:", display_name)
+    print("Patient id.......:", dataset.PatientID)
+    print("Modality.........:", dataset.Modality)
+    print("Study Date.......:", dataset.StudyDate)
+
+    if 'PixelData' in dataset:
+        rows = int(dataset.Rows)
+        cols = int(dataset.Columns)
+        print("Image size.......: {rows:d} x {cols:d}, {size:d} bytes".format(
+            rows=rows, cols=cols, size=len(dataset.PixelData)))
+        if 'PixelSpacing' in dataset:
+            print("Pixel spacing....:", dataset.PixelSpacing)
+
+    # use .get() if not sure the item exists, and want a default value if missing
+    print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
+    #---------------------------------------------------------------------------
+
+    # Assign the final image size
     image_size = tuple([gridsize*x for x in np.shape(dataset.pixel_array)])
     finalIm = np.zeros(image_size)
+    row_index = 0
+    col_index = 0
     for i in range(0, len(files)-1):
-        break
-    rows = int(dataset.Rows)
-    cols = int(dataset.Columns)
+        dataset = pydicom.dcmread(dirname+files[i])
+        finalIm[row_index: row_index + rows, col_index:col_index + cols] = dataset.pixel_array
+        col_index += cols
+        if(col_index == gridsize*cols):
+            col_index = 0
+            row_index += rows
+
+    plt.imshow(finalIm, cmap=plt.cm.bone)
+    plt.show()
 
 def DICOM_viewer(dirname, filenum):
     print ("Loading DICOM files in ", dirname)
@@ -192,7 +236,7 @@ dirname = "C:/Users/sushachawal/DICOMs/MRT1KM/"
 # slices_to_single_file(256, dirname, filename, 110)
 
 DICOM_to_png(dirname)
-DICOM_viewer(dirname, int(sys.argv[1]))
+# DICOM_viewer(dirname, int(sys.argv[1]))
 
 
 print('=========== Converting done! ===========')
