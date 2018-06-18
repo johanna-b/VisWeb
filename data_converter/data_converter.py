@@ -157,6 +157,52 @@ def DICOM_to_png(dirname):
     print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
     #---------------------------------------------------------------------------
 
+
+
+def DICOM_to_whole_png(dirname):
+    print ("Loading DICOM files in ", dirname)
+    try:
+        files = sorted(os.listdir(dirname))
+        pass
+    except IOError as e:
+        print ("Unable to open file: Check if file exists or is in directory")
+
+    # We aim to align the final slices in a square with zeros at the end
+    # where a slice is not present. (The number of slices will not necessarily
+    # be a square number)
+    gridsize = int((uppersquare(len(files))**0.5))
+
+    # Read the first image for data of all the slices
+    # TODO: Need functionality to ensure that all the scans
+    # in one file are indeed of the same scan
+    dataset = pydicom.dcmread(dirname+files[0])
+
+    #---------------------------------------------------------------------------
+    # Print data of Patient
+    print()
+    #print("Filename.........:", "IMG"+str(filenum).zfill(5))
+    print("Storage type.....:", dataset.SOPClassUID)
+    print()
+
+    pat_name = dataset.PatientName
+    display_name = pat_name.family_name + ", " + pat_name.given_name
+    print("Patient's name...:", display_name)
+    print("Patient id.......:", dataset.PatientID)
+    print("Modality.........:", dataset.Modality)
+    print("Study Date.......:", dataset.StudyDate)
+
+    if 'PixelData' in dataset:
+        rows = int(dataset.Rows)
+        cols = int(dataset.Columns)
+        print("Image size.......: {rows:d} x {cols:d}, {size:d} bytes".format(
+            rows=rows, cols=cols, size=len(dataset.PixelData)))
+        if 'PixelSpacing' in dataset:
+            print("Pixel spacing....:", dataset.PixelSpacing)
+
+    # use .get() if not sure the item exists, and want a default value if missing
+    print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
+    #---------------------------------------------------------------------------
+
     # Assign the final image size
     image_size = tuple([gridsize*x for x in np.shape(dataset.pixel_array)])
     finalIm = np.zeros(image_size)
@@ -174,7 +220,9 @@ def DICOM_to_png(dirname):
     print ("Minimum value in finalIm is: ", np.amin(finalIm))
     print ("Maximum value in finalIm is: ", np.amax(finalIm))
 
-    finalIm = finalIm * (255.0/np.amax(finalIm))
+    # for i in range(0, np.shape(finalIm))
+    finalIm *= (255.0/np.amax(finalIm))
+
     finalIm[finalIm>255.0] = 255.0
     print ("Minimum value in finalIm is: ", np.amin(finalIm))
     print ("Maximum value in finalIm is: ", np.amax(finalIm))
@@ -255,7 +303,7 @@ dirname = "C:/Users/sushachawal/DICOMs/CTA/SRS00003/"
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-DICOM_to_png(dirname)
+DICOM_to_whole_png(dirname)
 # DICOM_viewer(dirname, int(sys.argv[1]))
 
 
