@@ -8,6 +8,7 @@ from PIL import Image
 import numpy as np
 import pydicom
 import matplotlib.pyplot as plt
+import scipy.misc
 
 print('Python version:        %6.6s' % sys.version)
 
@@ -169,8 +170,24 @@ def DICOM_to_png(dirname):
             col_index = 0
             row_index += rows
 
-    plt.imshow(finalIm, cmap=plt.cm.bone)
-    plt.show()
+    # Scale image to between 0 and 255
+    print ("Minimum value in finalIm is: ", np.amin(finalIm))
+    print ("Maximum value in finalIm is: ", np.amax(finalIm))
+
+    finalIm = finalIm * (255.0/np.amax(finalIm))
+
+    print ("Minimum value in finalIm is: ", np.amin(finalIm))
+    print ("Maximum value in finalIm is: ", np.amax(finalIm))
+
+    finalIm = finalIm.astype(np.int)
+    #print(finalIm[250:255, 324:330])
+
+    scipy.misc.toimage(finalIm, cmin=0.0, cmax=255.0).save('outfile.png')
+
+    # NOTE: PIL save function not working for some reason. Workaround is above
+    # im = Image.fromarray(finalIm)
+    # im.show()
+    # im.save("test.png")
 
 def DICOM_viewer(dirname, filenum):
     print ("Loading DICOM files in ", dirname)
