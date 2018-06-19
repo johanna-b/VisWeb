@@ -113,6 +113,7 @@ def slices_to_single_file(tilesize, dirname, filename, num_slices):
     #imout.show()
     imout.save(dirname + "tiledVol" + ".png", "PNG")
 
+# ========================================================
 def DICOM_to_png(dirname):
     print ("Loading DICOM files in ", dirname)
     try:
@@ -120,11 +121,6 @@ def DICOM_to_png(dirname):
         pass
     except IOError as e:
         print ("Unable to open file: Check if file exists or is in directory")
-
-    # We aim to align the final slices in a square with zeros at the end
-    # where a slice is not present. (The number of slices will not necessarily
-    # be a square number)
-    gridsize = int((uppersquare(len(files))**0.5))
 
     # Read the first image for data of all the slices
     # TODO: Need functionality to ensure that all the scans
@@ -157,8 +153,14 @@ def DICOM_to_png(dirname):
     print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
     #---------------------------------------------------------------------------
 
+    for i in range(0, len(files)-1):
+        im_array = pydicom.dcmread(dirname+files[i]).pixel_array
+        im_array = im_array * (255.0/np.amax(im_array))
+        im = Image.fromarray(im_array.astype(np.uint8))
+        im = im.convert('L')
+        im.save(dirname + 'output_' + str(i).zfill(4) + ".png", "PNG")
 
-
+# ========================================================
 def DICOM_to_whole_png(dirname):
     print ("Loading DICOM files in ", dirname)
     try:
@@ -303,7 +305,7 @@ dirname = "C:/Users/sushachawal/DICOMs/CTA/SRS00003/"
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-DICOM_to_whole_png(dirname)
+DICOM_to_png(dirname)
 # DICOM_viewer(dirname, int(sys.argv[1]))
 
 

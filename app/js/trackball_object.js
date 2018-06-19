@@ -81,9 +81,9 @@ function onMouseUp( event ) {
 // =================================
 // remove mouse move listener
 function onMouseOut( event ) {
-    // visContainer.removeEventListener( 'mousemove', onMouseMove, false );
-    // visContainer.removeEventListener( 'mouseup', onMouseUp, false );
-    // visContainer.removeEventListener( 'mouseout', onMouseOut, false );
+    visContainer.removeEventListener( 'mousemove', onMouseMove, false );
+    visContainer.removeEventListener( 'mouseup', onMouseUp, false );
+    visContainer.removeEventListener( 'mouseout', onMouseOut, false );
 }
 
 

@@ -10,8 +10,8 @@
 var renderVars = {
     visWidth: 500,
     visHeight: 500,
-    visMaxWidth: 1000,
-    visMaxHeight: 1000
+    visMaxWidth: 4000,
+    visMaxHeight: 4000
 
 }
 
@@ -72,6 +72,7 @@ var initVis3D = function () {
 
     //camera = new THREE.OrthographicCamera(-3, 3, 3, -3 , -20, 20);
     camera = new THREE.PerspectiveCamera( 45, renderVars.visWidth / renderVars.visHeight, 0.1, 1000 );
+    camera.up.set( 0, 0, 1 );
     camera.position.z = 5;
 
     renderer = new THREE.WebGLRenderer();
@@ -144,7 +145,7 @@ var initVis3D = function () {
     // ==================
     // Mouse controls
 
-    controls = new THREE.TrackballControls( camera, renderer.domElement );
+    controls = new THREE.OrbitControls( camera, renderer.domElement );
     controls.addEventListener( 'change', function () {
 
         updateLightPos();
@@ -155,7 +156,7 @@ var initVis3D = function () {
     // loads shaders and renders the scene when done
     loadShaderAndRender();
 
-    visContainer.addEventListener( 'mousedown', onMouseDown, false );
+    //visContainer.addEventListener( 'mousedown', onMouseDown, false );
 }
 
 
