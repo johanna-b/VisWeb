@@ -83,6 +83,7 @@ def slices_to_single_file(tilesize, dirname, filename, num_slices):
 
     grid_size_x = 16
     grid_size_y = tilesize // grid_size_x
+    print ("Y Gridsize is: ",grid_size_y)
     count = 0
 
     imout = Image.new("L", (tile_size[0]*grid_size_x, tile_size[1]*grid_size_y))
@@ -112,6 +113,28 @@ def slices_to_single_file(tilesize, dirname, filename, num_slices):
 
     #imout.show()
     imout.save(dirname + "tiledVol" + ".png", "PNG")
+
+
+# ========================================================
+def Sush_slices_to_single_file(x,y,dirname,filename, num_slices):
+    print('slices to vol')
+    gridsize = int((uppersquare(num_slices)**0.5))
+    count = 0
+    imout = Image.new("L", (x*gridsize, y*gridsize))
+    for i in range(0,num_slices):
+        slice_filename = dirname + filename + str(i).zfill(4) + '.png'
+        #read file
+        img = Image.open(slice_filename)
+        #resize to also allow down/upsampling
+        img = img.resize((x, y))
+        row = count % gridsize
+        col = count // gridsize
+        imout.paste(img, (row*x , col*y))
+        count += 1
+
+    imout.save(dirname + "tiledVol" + ".png", "PNG")
+    return (gridsize, gridsize)
+
 
 # ========================================================
 def DICOM_to_png(dirname):
@@ -153,12 +176,63 @@ def DICOM_to_png(dirname):
     print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
     #---------------------------------------------------------------------------
 
-    for i in range(0, len(files)-1):
+    for i in range(0, len(files)):
         im_array = pydicom.dcmread(dirname+files[i]).pixel_array
         im_array = im_array * (255.0/np.amax(im_array))
         im = Image.fromarray(im_array.astype(np.uint8))
         im = im.convert('L')
-        im.save(dirname + 'output_' + str(i).zfill(4) + ".png", "PNG")
+        im.save("C:/Users/sushachawal/Data/" + 'output_' + str(i).zfill(4) + ".png", "PNG")
+    print("Finished converting DICOM to png")
+    return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": len(files)}
+
+# ========================================================
+def DICOM_to_png_scale_z_by_2(dirname):
+    print ("Loading DICOM files in ", dirname)
+    try:
+        files = sorted(os.listdir(dirname))
+        pass
+    except IOError as e:
+        print ("Unable to open file: Check if file exists or is in directory")
+
+    # Read the first image for data of all the slices
+    # TODO: Need functionality to ensure that all the scans
+    # in one file are indeed of the same scan
+    dataset = pydicom.dcmread(dirname+files[0])
+
+    #---------------------------------------------------------------------------
+    # Print data of Patient
+    print()
+    #print("Filename.........:", "IMG"+str(filenum).zfill(5))
+    print("Storage type.....:", dataset.SOPClassUID)
+    print()
+
+    pat_name = dataset.PatientName
+    display_name = pat_name.family_name + ", " + pat_name.given_name
+    print("Patient's name...:", display_name)
+    print("Patient id.......:", dataset.PatientID)
+    print("Modality.........:", dataset.Modality)
+    print("Study Date.......:", dataset.StudyDate)
+
+    if 'PixelData' in dataset:
+        rows = int(dataset.Rows)
+        cols = int(dataset.Columns)
+        print("Image size.......: {rows:d} x {cols:d}, {size:d} bytes".format(
+            rows=rows, cols=cols, size=len(dataset.PixelData)))
+        if 'PixelSpacing' in dataset:
+            print("Pixel spacing....:", dataset.PixelSpacing)
+
+    # use .get() if not sure the item exists, and want a default value if missing
+    print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
+    #---------------------------------------------------------------------------
+
+    for i in range(0, len(files)):
+        im_array = pydicom.dcmread(dirname+files[i]).pixel_array
+        im_array = im_array * (255.0/np.amax(im_array))
+        im = Image.fromarray(im_array.astype(np.uint8))
+        im = im.convert('L')
+        im.save("C:/Users/sushachawal/Data/" + 'output_' + str(i).zfill(4) + ".png", "PNG")
+    print("Finished converting DICOM to png")
+    return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": len(files)}
 
 # ========================================================
 def DICOM_to_whole_png(dirname):
@@ -242,6 +316,8 @@ def DICOM_to_whole_png(dirname):
     # im.show()
     # im.save("test.png")
 
+
+# ========================================================
 def DICOM_viewer(dirname, filenum):
     print ("Loading DICOM files in ", dirname)
     try:
@@ -281,6 +357,8 @@ def DICOM_viewer(dirname, filenum):
     plt.imshow(dataset.pixel_array, cmap=plt.cm.bone)
     plt.show()
 
+
+# ========================================================
 def uppersquare(num):
     if((num**(0.5))%1 == 0): return num
     #floor_int = math.floor(num**(0.5))
@@ -291,9 +369,10 @@ def uppersquare(num):
     #if num - floor_sq < ceil_sq-num : return floor_sq
     #else: return ceil_sq
 
+
 print('========== Starting converter ==========')
 
-dirname = "C:/Users/sushachawal/DICOMs/CTA/SRS00003/"
+dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1KM/", "C:/Users/sushachawal/DICOMs/CTA/SRS00003/")
 #dirname = "/johanna/work/development/code/other/vis_web/data/raw/bunny/"
 #raw16_to_png(512, 512, 361, dirname)
 
@@ -305,7 +384,12 @@ dirname = "C:/Users/sushachawal/DICOMs/CTA/SRS00003/"
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-DICOM_to_png(dirname)
+data = DICOM_to_png(dirname[2])
+print(data)
+scaleup = 2
+
+grid_dims = Sush_slices_to_single_file(data["im_dims"][0]//2,data["im_dims"][1]//2, "C:/Users/sushachawal/Data/", "output_", data["num_slices"])
+print("Grid dimensions in tiledVol are: ",grid_dims)
 # DICOM_viewer(dirname, int(sys.argv[1]))
 
 
