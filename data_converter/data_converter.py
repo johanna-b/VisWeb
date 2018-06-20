@@ -234,6 +234,7 @@ def DICOM_to_png_scale_z_by_2(dirname):
     print("Finished converting DICOM to png")
     return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": len(files)}
 
+
 # ========================================================
 def DICOM_to_whole_png(dirname):
     print ("Loading DICOM files in ", dirname)
