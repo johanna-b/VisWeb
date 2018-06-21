@@ -384,7 +384,8 @@ var onSecondPassShaderLoad = function ( vertex_text, fragment_text ) {
 
 // =================================
 //
-var updateSampleDistance = function ( val ) {
+var
+    updateSampleDistance = function ( val ) {
 
     var sampleDist = uiParams.sample_distance / (Math.max( x, y, z ));
     shaderMaterialSecondPass.uniforms.sampleDistance.value = sampleDist;

@@ -36,7 +36,7 @@ var initUI = function () {
     var folder_VR = gui.addFolder( 'Volume Renderer' );
 
     // dataset combobox
-    var dataset_combo = folder_VR.add( uiParams, 'dataset', {none: -1, hydrogen: 0, bunny: 1, sprite: 2, MRI: 3, lowresCT: 4, highresCT: 5} );
+    var dataset_combo = folder_VR.add( uiParams, 'dataset', {none: -1, hydrogen: 0, bunny: 1, sprite: 2, MRI: 3, lowresCT: 4, highresCT: 5, MRIinterp: 6} );
 
     dataset_combo.onChange( function ( value ) {
         loadDataset( value );

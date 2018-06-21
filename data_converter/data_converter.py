@@ -185,6 +185,7 @@ def DICOM_to_png(dirname):
     print("Finished converting DICOM to png")
     return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": len(files)}
 
+
 # ========================================================
 def DICOM_to_png_scale_z_by_2(dirname):
     print ("Loading DICOM files in ", dirname)
@@ -224,15 +225,26 @@ def DICOM_to_png_scale_z_by_2(dirname):
     # use .get() if not sure the item exists, and want a default value if missing
     print("Slice location...:", dataset.get('SliceLocation', "(missing)"))
     #---------------------------------------------------------------------------
+    im_array = pydicom.dcmread(dirname+files[0]).pixel_array
+    im_array = im_array * (255.0/np.amax(im_array))
+    im = Image.fromarray(im_array.astype(np.uint8))
+    im = im.convert('L')
+    im.save("C:/Users/sushachawal/Data/" + 'output_' + str(0).zfill(4) + ".png", "PNG")
+    save_count = 1
+    for i in range(1, len(files)):
+        im_array2 = pydicom.dcmread(dirname+files[i]).pixel_array
+        im_array2 = im_array2 * (255.0/np.amax(im_array2))
+        im2 = Image.fromarray(im_array2.astype(np.uint8))
+        im2 = im2.convert('L')
+        imMid = Image.blend(im, im2, 0.5)
+        imMid = imMid.convert('L')
+        imMid.save("C:/Users/sushachawal/Data/" + 'output_' + str(save_count).zfill(4) + ".png", "PNG")
+        im2.save("C:/Users/sushachawal/Data/" + 'output_' + str(save_count+1).zfill(4) + ".png", "PNG")
+        save_count += 2
+        im = im2
 
-    for i in range(0, len(files)):
-        im_array = pydicom.dcmread(dirname+files[i]).pixel_array
-        im_array = im_array * (255.0/np.amax(im_array))
-        im = Image.fromarray(im_array.astype(np.uint8))
-        im = im.convert('L')
-        im.save("C:/Users/sushachawal/Data/" + 'output_' + str(i).zfill(4) + ".png", "PNG")
     print("Finished converting DICOM to png")
-    return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": len(files)}
+    return {"im_dims": (dataset.Rows, dataset.Columns), "num_slices": (len(files)-1)*2 + 1}
 
 
 # ========================================================
@@ -385,10 +397,10 @@ dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1K
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-data = DICOM_to_png(dirname[2])
+data = DICOM_to_png_scale_z_by_2(dirname[0])
 print(data)
-scaleup = 2
-
+# scaleup = 2
+#
 grid_dims = Sush_slices_to_single_file(data["im_dims"][0]//2,data["im_dims"][1]//2, "C:/Users/sushachawal/Data/", "output_", data["num_slices"])
 print("Grid dimensions in tiledVol are: ",grid_dims)
 # DICOM_viewer(dirname, int(sys.argv[1]))

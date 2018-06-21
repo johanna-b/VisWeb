@@ -10,12 +10,13 @@ var dataPath = "app/data/processed/";
 
 var datasets = [
     //{ name: "none", filename: "", x: 0, y: 0, z: 0 },
-    {name: "hydrogen", filename: "hydrogen3D1.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
+    {name: "hydrogen", filename: "hydrogen3D.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
     {name: "bunny", filename: "bunny3d.png", x: 128, y: 128, z: 128, slicesx: 16, slicesy: 8},
     {name: "sprite", filename: "sprite0.png", x: 0, y: 0, z: 0, slicesx: 0, slicesy: 0},
     {name: "MRI", filename: "MRI.png", x: 512, y: 512, z: 92, slicesx: 10, slicesy: 10},
-    {name: "lowresCT", filename: "CT.png", x:512, y: 512, z: 183, slicesx: 14, slicesy: 14},
-    {name: "highresCT", filename: "CT_hr2.png", x:512, y: 512, z: 371, slicesx: 20, slicesy: 20}
+    {name: "lowresCT", filename: "CT.png", x:256, y: 256, z: 183, slicesx: 14, slicesy: 14},
+    {name: "highresCT", filename: "CT_hr2.png", x:512, y: 512, z: 371, slicesx: 20, slicesy: 20},
+    {name: "MRIinterp", filename: "MRIinterp.png", x : 256, y: 256, z: 189, slicesx: 14, slicesy: 14}
 ];
 
 var datasetId = 0;
