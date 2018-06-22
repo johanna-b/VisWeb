@@ -12,10 +12,18 @@
     float: left;
     width: 250px;
     background-color: #f1f1f1;
-    height: 100%;
+    height: 50%;
     padding: 5px;
 
 }
+
+/*#TF_ui {*/
+    /*float: left;*/
+    /*width: 250px;*/
+    /*background-colour: #f1f1f1;*/
+    /*height: 50%;*/
+    /*padding: 5px;*/
+/*}*/
 
 /* Set gray background color and 100% height */
 #sliceview_ui {

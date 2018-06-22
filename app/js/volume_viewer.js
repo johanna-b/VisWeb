@@ -65,6 +65,16 @@ var initVis3D = function () {
 
     visContainer = document.getElementById( 'div_vis3D' );
 
+
+    var options = {
+        parent:     visContainer,
+        panel: {
+            isCollapsible: true
+        }
+    };
+
+    tf_panel = new TF_panel( options );
+
     // ==================
     // create basic scene / renderer / camera
 
