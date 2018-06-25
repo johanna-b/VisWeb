@@ -51,6 +51,7 @@ var visContainer;
 var previousMousePosition;
 
 
+
 // =================================
 // methods
 // =================================
@@ -64,16 +65,6 @@ var resetCamera = function () {
 var initVis3D = function () {
 
     visContainer = document.getElementById( 'div_vis3D' );
-
-
-    var options = {
-        parent:     visContainer,
-        panel: {
-            isCollapsible: true
-        }
-    };
-
-    tf_panel = new TF_panel( options );
 
     // ==================
     // create basic scene / renderer / camera
@@ -279,6 +270,7 @@ var renderVolume = function () {
     }
 
     stats.end();
+    console.log(tf_panel.tf_values)
 }
 
 

@@ -121,7 +121,7 @@ var updateTFTexture = function ( v ) {
         }
 
         // colorful ramp
-    } else {
+    } else if ( val == 2 ) {
         for ( var i = 0; i < 256; i++ ) {
             // rgb
             if ( i < 150 ) {
@@ -143,6 +143,8 @@ var updateTFTexture = function ( v ) {
                 tfArrayRgba[ 4 * i + 3 ] = 0;
             }
         }
+    } else {
+
     }
 
     // create/update texture

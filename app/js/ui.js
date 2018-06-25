@@ -10,6 +10,8 @@ var slice_slider;
 
 var stats;
 
+var tf_panel;
+
 var initUI = function () {
 
     window.addEventListener( "resize", onWindowResize );
@@ -49,7 +51,7 @@ var initUI = function () {
         updateSampleDistance();
     } );
 
-    var tf_combo = folder_VR.add( uiParams, 'transfer_function', {ramp1: 0, ramp2: 1, colors: 2} );
+    var tf_combo = folder_VR.add( uiParams, 'transfer_function', {ramp1: 0, ramp2: 1, colors: 2, custom: 3} );
 
     tf_combo.onChange( function ( value ) {
         updateTFTexture( value );
@@ -104,5 +106,21 @@ var initUI = function () {
     // General UI ===============================
 
     gui.add( btn_refresh, 'refresh' );
+
+    var options = {
+        //parent: document.getElementById( 'div_vis2D' ),
+        //container: document.getElementById( 'div_vis2D' ),
+        panel: {
+            isCollapsible: true
+        },
+        colors: ['#cc7832', '#f7d911', '#c40a10'],
+        location: {
+            x: 0.1,
+            y: 0.8
+        }
+    };
+
+    console.log(document.getElementById( 'div_vis3D' ));
+    tf_panel = new TF_panel( options );
 
 }
