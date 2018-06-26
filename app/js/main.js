@@ -144,7 +144,40 @@ var updateTFTexture = function ( v ) {
             }
         }
     } else {
+        let stop_points = [];
+        let colors = [];
+        for(let i = 1; i < tf_panel.tf_values.length - 1; i++) {
+            stop_points.push(Math.floor(tf_panel.tf_values[i][0] * 255));
+            colors.push(tf_panel.tf_values[i][1])
+        }
+        console.log("Boundary points are: ")
+        console.log(stop_points)
+        console.log("Boundary colors are: ")
+        console.log(colors)
+        for(let i = 0; i < 256; i++){
+            //if(i < )
+        }
 
+
+
+
+
+
+
+
+
+        //console.log( '1' );
+        for ( var i = 0; i < 256; i++ ) {
+            // rgb
+            tfArrayRgba[ 4 * i ] = tfArrayRgba[ 4 * i + 1 ] = tfArrayRgba[ 4 * i + 2 ] = i;
+            // opacity
+            tfArrayRgba[ 4 * i + 3 ] = i;
+
+            // threshold
+            if ( i < 100 ) {
+                tfArrayRgba[ 4 * i + 3 ] = 0;
+            }
+        }
     }
 
     // create/update texture
