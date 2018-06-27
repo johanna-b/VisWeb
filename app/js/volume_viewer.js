@@ -270,8 +270,8 @@ var renderVolume = function () {
     }
 
     stats.end();
-    // console.log("Straight TF values are: ")
-    // console.log(tf_panel.tf_values)
+     // console.log("Straight TF values are: ")
+     // console.log(tf_panel.tf_values)
 }
 
 

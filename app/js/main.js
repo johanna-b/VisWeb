@@ -132,7 +132,7 @@ var updateTFTexture = function ( v ) {
                 tfArrayRgba[ 4 * i + 3 ] = i;
             } else {
                 tfArrayRgba[ 4 * i ] = 255 - (i - 150);
-                tfArrayRgba[ 4 * i + 2 ] = 255;
+                tfArrayRgba[ 4 * i + 1 ] = 255;
                 tfArrayRgba[ 4 * i + 2 ] = i;
                 // opacity
                 tfArrayRgba[ 4 * i + 3 ] = i;
@@ -149,35 +149,43 @@ var updateTFTexture = function ( v ) {
         for(let i = 1; i < tf_panel.tf_values.length - 1; i++) {
             stop_points.push(Math.floor(tf_panel.tf_values[i][0] * 255));
             colors.push(tf_panel.tf_values[i][1])
+            colors[i-1].a = Math.floor(255*colors[i-1].a);
         }
         console.log("Boundary points are: ")
         console.log(stop_points)
         console.log("Boundary colors are: ")
         console.log(colors)
+        let cur_idx = 0;
+        let cur_m = { r: 0, g: 0, b: 0, a: 0 };
+        let cur_c = { r: 0, g: 0, b: 0, a: 0 };
         for(let i = 0; i < 256; i++){
-            //if(i < )
-        }
-
-
-
-
-
-
-
-
-
-        //console.log( '1' );
-        for ( var i = 0; i < 256; i++ ) {
-            // rgb
-            tfArrayRgba[ 4 * i ] = tfArrayRgba[ 4 * i + 1 ] = tfArrayRgba[ 4 * i + 2 ] = i;
-            // opacity
-            tfArrayRgba[ 4 * i + 3 ] = i;
-
-            // threshold
-            if ( i < 100 ) {
-                tfArrayRgba[ 4 * i + 3 ] = 0;
+            if(i == 0 && stop_points[0] == 0)
+                cur_c = colors[0];
+            if(i >= stop_points[stop_points.length -1])
+                cur_m, cur_c = 0;
+            else if(i >= stop_points[cur_idx]){
+                let cix = stop_points[cur_idx + 1] - stop_points[cur_idx];
+                cur_m = {
+                    r: (colors[cur_idx+1].r - colors[cur_idx].r)/cix,
+                    g: (colors[cur_idx+1].g - colors[cur_idx].g)/cix,
+                    b: (colors[cur_idx+1].b - colors[cur_idx].b)/cix,
+                    a: (colors[cur_idx+1].a - colors[cur_idx].a)/cix
+                }
+                cur_c = {
+                    r: colors[cur_idx].r - cur_m.r * stop_points[cur_idx],
+                    g: colors[cur_idx].g - cur_m.g * stop_points[cur_idx],
+                    b: colors[cur_idx].b - cur_m.b * stop_points[cur_idx],
+                    a: colors[cur_idx].a - cur_m.a * stop_points[cur_idx],
+                }
+                cur_idx ++;
             }
+            tfArrayRgba[ 4 * i ] = cur_m.r*i + cur_c.r;
+            tfArrayRgba[ 4 * i + 1 ] = cur_m.g*i + cur_c.g;
+            tfArrayRgba[ 4 * i + 2 ] = cur_m.b*i + cur_c.b;
+            // opacity
+            tfArrayRgba[ 4 * i + 3 ] = cur_m.a*i + cur_c.a;
         }
+        
     }
 
     // create/update texture
