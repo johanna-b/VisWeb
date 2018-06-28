@@ -108,8 +108,7 @@ var initUI = function () {
     gui.add( btn_refresh, 'refresh' );
 
     var options = {
-        //parent: document.getElementById( 'div_vis2D' ),
-        //container: document.getElementById( 'div_vis2D' ),
+        //container: document.getElementById( 'div_vis3D' ),
         panel: {
             isCollapsible: true
         },
@@ -122,5 +121,9 @@ var initUI = function () {
 
     console.log(document.getElementById( 'div_vis3D' ));
     tf_panel = new TF_panel( options );
+    tf_panel.registerCallback(function(){
+        updateTFTexture(uiParams.transfer_function);
+        renderVolume();
+    } );
 
 }

@@ -14,13 +14,13 @@
 
 		this.options = this.parseOptions( options );
 		this.parent = options.parent || document.body;
-
+		console.log(this.parent)
 		this.tf_values = [];
 
 		this.callbacks = [];
 
 		var container = options.container || parent.parentElement || null;
-
+		console.log(container)
 		var collapsiblePanel;
 		if( this.options.panel.isCollapsible ) {
 			collapsiblePanel = new Panel( { container: container } );

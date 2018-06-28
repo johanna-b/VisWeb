@@ -41,7 +41,11 @@
     margin: 0px 250px 0px 250px;
 }
 
+#div_vis3D {
+    height: 100vh;
+}
+
 #container {
     overflow: hidden;
-    height: 1010px
+    height: 100vh;
 }
