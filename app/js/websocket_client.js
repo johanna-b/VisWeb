@@ -17,7 +17,27 @@ function WebSocketTest() {
             };
 
             ws.send(JSON.stringify(HVR_Message));
-            alert("Message is sent...");
+            alert("Init message sent...");
+            HVR_Message = {
+                MessageId: HVRMessageId.HVR_LOAD_DATA,
+                numVols: 2,
+                vols: [0 , 1]
+            }
+            ws.send(JSON.stringify(HVR_Message));
+            alert("Load Volume Message Sent...")
+            HVR_Message = {
+                MessageId: HVRMessageId.HVR_TF,
+                objId: 1,
+                numNodes: 3,
+                tf: [
+                    new HVRTransferFunctionNode([0.0,0.0,0.0,0.0],0.0),
+                    new HVRTransferFunctionNode([1.0,0.0,0.0,1.0],1.0),
+                    new HVRTransferFunctionNode([1.0,0.0,0.0,0.0],1.0)
+                    ]
+                }
+            ws.send(JSON.stringify(HVR_Message));
+            alert("Change TF request sent...")
+
         };
 
         ws.onmessage = function (evt) {
@@ -37,6 +57,12 @@ function WebSocketTest() {
     }
 }
 
+class HVRTransferFunctionNode {
+    constructor(color, position){
+        this.color = color;
+        this.position = position;
+    }
+};
 
 const HVRMessageId = {
 

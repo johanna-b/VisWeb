@@ -141,6 +141,7 @@ def DICOM_to_png(dirname):
     print ("Loading DICOM files in ", dirname)
     try:
         files = sorted(os.listdir(dirname))
+        print(files[7])
         pass
     except IOError as e:
         print ("Unable to open file: Check if file exists or is in directory")
@@ -385,7 +386,7 @@ def uppersquare(num):
 
 print('========== Starting converter ==========')
 
-dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1KM/", "C:/Users/sushachawal/DICOMs/CTA/SRS00003/")
+dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1KM/", "C:/Users/sushachawal/DICOMs/CTA/SRS00003/", "C:/Users/sushachawal/DICOMs/ThumbVol/")
 #dirname = "/johanna/work/development/code/other/vis_web/data/raw/bunny/"
 #raw16_to_png(512, 512, 361, dirname)
 
@@ -397,11 +398,11 @@ dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1K
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-data = DICOM_to_png_scale_z_by_2(dirname[0])
+data = DICOM_to_png(dirname[3])
 print(data)
 # scaleup = 2
 #
-grid_dims = Sush_slices_to_single_file(data["im_dims"][0]//2,data["im_dims"][1]//2, "C:/Users/sushachawal/Data/", "output_", data["num_slices"])
+grid_dims = Sush_slices_to_single_file(data["im_dims"][0],data["im_dims"][1], "C:/Users/sushachawal/Data/", "output_", data["num_slices"])
 print("Grid dimensions in tiledVol are: ",grid_dims)
 # DICOM_viewer(dirname, int(sys.argv[1]))
 
