@@ -2,15 +2,74 @@
 
 <html>
 <head>
-
+    <!--<link rel="stylesheet" href="libs/css/bootstrap.css">-->
+    <link rel="stylesheet" href="app/css/style.css">
+    <link rel="stylesheet" href="libs/css/ui.css">
+    <meta charset="UTF-8">
+    <title>VisWeb</title>
 </head>
 
 <body>
 <div id = "sse">
-    <a href = "javascript:WebSocketTest()">Run WebSocket</a>
+    <a href = "javascript:StartWS()">Run WebSocket</a>
 </div>
 
 </body>
 </html>
 
 <script src="app/js/websocket_client.js"></script>
+<script src="libs/js/TF_panel.js"></script>
+<script src="libs/js/ui.js"></script>
+<script src="libs/js/CP_widget.js"></script>
+<script>
+    var ws;
+    function StartWS() {
+        ws = new WebSocket("ws://localhost:10112/echo");
+
+        ws.onopen = function () {
+            ws.send(JSON.stringify(sendInitRequest(["dll", "--app_petascale"])));
+            console.log("Init message sent...");
+
+            ws.send(JSON.stringify(sendLoadVolRequest([0, 1])));
+            console.log("Load Volume Message Sent...")
+
+        }
+    };
+    var options = {
+        //container: document.getElementById( 'div_vis3D' ),
+        panel: {
+            isCollapsible: true
+        },
+        colors: ['#cc7832', '#f7d911', '#c40a10'],
+        location: {
+            x: 0.1,
+            y: 0.8
+        }
+    };
+    var tf_panel = new TF_panel( options );
+    tf_panel.registerCallback(function(){
+        console.log("Register callback called!")
+        let stop_point;
+        let color = [];
+        let tf = [];
+        // for(let i = 1; i < tf_panel.tf_values.length - 1; i++) {
+        //     stop_points.push(tf_panel.tf_values[i][0]);
+        //     colors.push(tf_panel.tf_values[i][1]);
+        //     // colors.r = Math.floor(colors.r/255);
+        //     // colors.g = Math.floor(colors.g/255);
+        //     // colors.b = Math.floor(colors.b/255);
+        //     console.log(stop_points, colors);
+        // }
+        for(let i = 0; i < tf_panel.tf_values.length; i++) {
+            console.log(tf_panel.tf_values[i][0], tf_panel.tf_values[i][1])
+            color = [tf_panel.tf_values[i][1].r/255,
+                     tf_panel.tf_values[i][1].g/255,
+                     tf_panel.tf_values[i][1].b/255,
+                     tf_panel.tf_values[i][1].a
+                    ]
+            tf.push(new HVRTransferFunctionNode(color, tf_panel.tf_values[i][0]))
+        }
+        if(ws != null) ws.send(JSON.stringify(sendTFfunction(1, tf)));
+        else console.log("Check WebSocket has been opened!")
+    });
+</script>

@@ -1,6 +1,4 @@
 function WebSocketTest() {
-    var test = 5;
-    console.log("Length of an int is ", test.length)
     if ("WebSocket" in window) {
         alert("WebSocket is supported by your Browser!");
 
@@ -9,35 +7,24 @@ function WebSocketTest() {
 
         ws.onopen = function() {
 
-            // Web Socket is connected, send data using send()
-            var HVR_Message = {
-                MessageId: HVRMessageId.HVR_INIT_REQUEST,
-                numArgs: 2,
-                options: [" ", "dll", "--app_petascale"],
-            };
-
-            ws.send(JSON.stringify(HVR_Message));
+            ws.send(JSON.stringify(sendInitRequest(["dll", "--app_petascale"])));
             alert("Init message sent...");
-            HVR_Message = {
-                MessageId: HVRMessageId.HVR_LOAD_DATA,
-                numVols: 2,
-                vols: [0 , 1]
-            }
-            ws.send(JSON.stringify(HVR_Message));
-            alert("Load Volume Message Sent...")
-            HVR_Message = {
-                MessageId: HVRMessageId.HVR_TF,
-                objId: 1,
-                numNodes: 3,
-                tf: [
-                    new HVRTransferFunctionNode([0.0,0.0,0.0,0.0],0.0),
-                    new HVRTransferFunctionNode([1.0,0.0,0.0,1.0],1.0),
-                    new HVRTransferFunctionNode([1.0,0.0,0.0,0.0],1.0)
-                    ]
-                }
-            ws.send(JSON.stringify(HVR_Message));
-            alert("Change TF request sent...")
 
+            ws.send(JSON.stringify(sendLoadVolRequest([0, 1])));
+            alert("Load Volume Message Sent...")
+
+            ws.send(JSON.stringify(sendTFfunction(1, [
+                new HVRTransferFunctionNode([0.0,0.0,0.0,0.0],0.0),
+                new HVRTransferFunctionNode([1.0,0.0,0.0,1.0],1.0),
+                new HVRTransferFunctionNode([1.0,0.0,0.0,0.0],1.0)
+            ])));
+            alert("Change TF request sent...")
+            ws.send(JSON.stringify(sendTFfunction(1, [
+                new HVRTransferFunctionNode([0.0,0.0,0.0,0.0],0.0),
+                new HVRTransferFunctionNode([0.0,1.0,0.0,1.0],1.0),
+                new HVRTransferFunctionNode([0.0,1.0,0.0,0.0],1.0)
+            ])));
+            alert("Change TF request sent...")
         };
 
         ws.onmessage = function (evt) {
@@ -105,3 +92,44 @@ const HVRMessageId = {
     HVR_VASTIDS: 29,
     HVR_VASTIDS_COMPARISON: 30
 };
+
+var sendTFfunction = function(objId, nodes){
+    let numNodes = nodes.length;
+    let HVR_Message = {
+        MessageId: HVRMessageId.HVR_TF,
+        objId: objId,
+        numNodes: numNodes,
+        tf: nodes
+    }
+    return HVR_Message;
+};
+
+var sendInitRequest = function(options){
+    let HVR_Message;
+    if(options == null){
+        HVR_Message = {
+            MessageId: HVRMessageId.HVR_INIT_REQUEST,
+            numArgs: 0,
+            options: []
+        };
+    }
+    else {
+        console.log(options.length)
+        HVR_Message = {
+            MessageId: HVRMessageId.HVR_INIT_REQUEST,
+            numArgs: options.length,
+            options: options
+        }
+    }
+    return HVR_Message;
+};
+
+var sendLoadVolRequest = function(vols){
+    let HVR_Message = {
+        MessageId: HVRMessageId.HVR_LOAD_DATA,
+        numVols: vols.length,
+        vols: vols
+    }
+    return HVR_Message;
+};
+
