@@ -16,7 +16,8 @@ var datasets = [
     {name: "MRI", filename: "MRI.png", x: 512, y: 512, z: 92, slicesx: 10, slicesy: 10},
     {name: "lowresCT", filename: "CT.png", x:256, y: 256, z: 183, slicesx: 14, slicesy: 14},
     {name: "highresCT", filename: "CT_hr2.png", x:512, y: 512, z: 371, slicesx: 20, slicesy: 20},
-    {name: "MRIinterp", filename: "MRIinterp.png", x : 256, y: 256, z: 189, slicesx: 14, slicesy: 14}
+    {name: "MRIinterp", filename: "MRIinterp.png", x : 256, y: 256, z: 189, slicesx: 14, slicesy: 14},
+    {name: "ThumbVol", filename: "thumbVol.png", x:208, y:320, z: 63, slicesx: 8, slicesy: 8}
 ];
 
 var datasetId = 0;
