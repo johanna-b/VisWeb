@@ -14,8 +14,13 @@
     <a href = "javascript:StartWS()">Run WebSocket</a>
 </div>
 
+
+<canvas id="myCanvas"></canvas>
+
+
 </body>
 </html>
+
 
 <script src="app/js/websocket_client.js"></script>
 <script src="libs/js/TF_panel.js"></script>
@@ -24,10 +29,15 @@
 <script>
     var ws;
     var count = 0;
+    var c=document.getElementById("myCanvas");
+    var ctx=c.getContext("2d");
+    var imgData=ctx.createImageData(768,768);
+
+
     function StartWS() {
         count = 0;
         ws = new WebSocket("ws://localhost:10112/");
-
+        ws.binaryType = 'arraybuffer';
         ws.onopen = function () {
             ws.send(JSON.stringify(sendInitRequest(["dll", "--app_petascale"])));
             console.log("Init message sent...");
@@ -35,7 +45,13 @@
             ws.send(JSON.stringify(sendLoadVolRequest([0, 1])));
             console.log("Load Volume Message Sent...")
 
-        }
+        };
+        ws.onmessage = function(evt){
+            console.log("Receiving image!");
+            var image = new Uint8Array(evt.data);
+            imgData = image;
+            ctx.putImageData(imgData,10,10);
+        };
     };
     var options = {
         //container: document.getElementById( 'div_vis3D' ),
@@ -47,6 +63,7 @@
             x: 0.1,
             y: 0.8
         }
+
     };
     var tf_panel = new TF_panel( options );
     tf_panel.registerCallback(function(){
@@ -76,3 +93,4 @@
         console.log(count," callbacks have been called")
     });
 </script>
+

@@ -5,6 +5,7 @@ import math
 import array
 import os
 from PIL import Image
+#import gdcm
 import numpy as np
 import pydicom
 import matplotlib.pyplot as plt
@@ -150,7 +151,6 @@ def DICOM_to_png(dirname):
     # TODO: Need functionality to ensure that all the scans
     # in one file are indeed of the same scan
     dataset = pydicom.dcmread(dirname+files[0])
-
     #---------------------------------------------------------------------------
     # Print data of Patient
     print()
@@ -178,7 +178,9 @@ def DICOM_to_png(dirname):
     #---------------------------------------------------------------------------
 
     for i in range(0, len(files)):
-        im_array = pydicom.dcmread(dirname+files[i]).pixel_array
+        im_array = pydicom.dcmread(dirname+files[i]).decompress()
+        print("Finished decompressing!")
+        im_array = im_array.pixel_array
         im_array = im_array * (255.0/np.amax(im_array))
         im = Image.fromarray(im_array.astype(np.uint8))
         im = im.convert('L')
@@ -398,11 +400,11 @@ dirname = ("C:/Users/sushachawal/DICOMs/CT/" ,"C:/Users/sushachawal/DICOMs/MRT1K
 # #slices_to_single_file(128, dirname, filename, 316)
 # slices_to_single_file(256, dirname, filename, 110)
 
-data = DICOM_to_png(dirname[3])
-print(data)
+#data = DICOM_to_png(dirname[3])
+#print(data)
 # scaleup = 2
 #
-grid_dims = Sush_slices_to_single_file(data["im_dims"][0],data["im_dims"][1], "C:/Users/sushachawal/Data/", "output_", data["num_slices"])
+grid_dims = Sush_slices_to_single_file(208,320, "C:/Users/sushachawal/Data/", "output_", 63)
 print("Grid dimensions in tiledVol are: ",grid_dims)
 # DICOM_viewer(dirname, int(sys.argv[1]))
 

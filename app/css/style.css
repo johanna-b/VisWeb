@@ -49,3 +49,13 @@
     overflow: hidden;
     height: 100vh;
 }
+
+
+#myCanvas{
+    height: 400px;
+    width: 400px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    border:1px solid #c40a10;
+}
