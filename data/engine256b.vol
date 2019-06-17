@@ -1,0 +1,6 @@
+VOL
+rawfile engine256b.raw
+type GL_UNSIGNED_BYTE
+volres 256 256 110
+isovalue 0.4
+inverse 1
