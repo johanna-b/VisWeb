@@ -1,0 +1,68 @@
+<style type="text/css">
+  #drop_zone{
+    width: 400px;
+    height: 100px;
+    border: 1px solid black;
+  }
+
+</style>
+
+<div id="drop_zone">Drop files here
+</div>
+<input type="file" id="files" name="files[]" accept=".raw" />
+
+<output id="list"></output>
+
+<script>
+
+
+  function handleFile(files) {
+    // Loop through the FileList and render image files as thumbnails.
+    
+    f = files[0];
+    if (!f) {
+      console.log("we need to pay respects");
+    }
+
+    var reader = new FileReader();
+
+    // Closure to capture the file information.
+    reader.onload = function(data){
+      console.log(new Uint8Array(data.target.result))
+    }
+
+    reader.onprogress = function(data) {
+          if (data.lengthComputable) {                                            
+              var progress = parseInt( ((data.loaded / data.total) * 100), 10 );
+              console.log(progress);
+          }
+      }
+
+    // Read in the image file as a data URL.
+    reader.readAsArrayBuffer(f);
+  
+  };
+
+  function handleFileSelect(evt) {
+    handleFile(evt.target.files)
+  };
+
+   function handleFileDrop(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    handleFile(evt.dataTransfer.files); // FileList object.
+  };
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  };
+
+  var inn = document.getElementById('files');
+  inn.addEventListener('change', handleFileSelect, false);
+  var drop = document.getElementById('drop_zone');
+  drop.addEventListener('dragover', handleDragOver, false);
+  drop.addEventListener('drop', handleFileDrop, false);
+</script>
