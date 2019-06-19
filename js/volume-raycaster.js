@@ -38,15 +38,7 @@ const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
 const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
 
 var volumes = {
-	// "Fuel": "7d87jcsh0qodk78/fuel_64x64x64_uint8.raw",
-	// "Neghip": "zgocya7h33nltu9/neghip_64x64x64_uint8.raw",
-	// "Hydrogen Atom": "jwbav8s3wmmxd5x/hydrogen_atom_128x128x128_uint8.raw",
-	// "Boston Teapot": "w4y88hlf2nbduiv/boston_teapot_256x256x178_uint8.raw",
 	"Engine": "ld2sqwwd3vaq4zf/engine_256x256x128_uint8.raw",
-	// "Bonsai": "rdnhdxmxtfxe0sa/bonsai_256x256x256_uint8.raw",
-	// "Foot": "ic0mik3qv4vqacm/foot_256x256x256_uint8.raw",
-	// "Skull": "5rfjobn0lvb7tmo/skull_256x256x256_uint8.raw",
-	// "Aneurysm": "3ykigaiym8uiwbp/aneurism_256x256x256_uint8.raw",
 };
 
 var colormaps = {
@@ -60,7 +52,7 @@ var colormaps = {
 
 var loadVolume = function(file, onload) {
 	var m = file.match(fileRegex);
-	var volDims = [256,256,110];
+	var volDims = [265,265,110];
 	
 	var url = "data/engine256b.raw";
 	var req = new XMLHttpRequest();

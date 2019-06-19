@@ -1,0 +1,213 @@
+@font-face {
+    font-weight: normal;
+    font-style: normal;
+    font-family: 'codropsicons';
+    src: url('../fonts/codropsicons/codropsicons.eot');
+    src: url('../fonts/codropsicons/codropsicons.eot?#iefix') format('embedded-opentype'), url('../fonts/codropsicons/codropsicons.woff') format('woff'), url('../fonts/codropsicons/codropsicons.ttf') format('truetype'), url('../fonts/codropsicons/codropsicons.svg#codropsicons') format('svg');
+}
+
+*,
+*:after,
+*:before {
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.clearfix:before,
+.clearfix:after {
+    display: table;
+    content: '';
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+body {
+    font-family: Avenir, 'Helvetica Neue', 'Lato', 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #4b0f31;
+    background-color: #f1e5e6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+    outline: none;
+    color: #d3394c;
+    text-decoration: none;
+}
+
+a:hover,
+a:focus {
+    color: #722040;
+}
+
+.hidden {
+    position: absolute;
+    overflow: hidden;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* Header */
+
+.codrops-header {
+    padding: 2em 1em 2em;
+    text-align: center;
+}
+
+.codrops-header h1 {
+    margin: 0.5em 0 0;
+    letter-spacing: -1px;
+    font-size: 3em;
+    line-height: 1;
+}
+
+.codrops-header h1 span {
+    display: block;
+    padding: 0.5em 0 1em;
+    color: #999;
+    font-weight: normal;
+    font-size: 0.45em;
+}
+
+
+
+/* Content */
+
+.content {
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+    margin: 0 auto;
+    padding: 0 0 3em 0;
+}
+
+.content footer {
+    color: #b39295;
+    margin-top: 40px;
+}
+
+.content footer a:hover,
+.content footer a:focus {
+    color: #4b0f31;
+}
+
+.box {
+    background-color: #dfc8ca;
+    padding: 6.25rem 1.25rem;
+    /*margin-top: 2.5rem;
+*/
+
+}
+
+.target {
+    outline: 2px dashed #f1e5e6;
+    outline-offset: -20px;
+}
+
+.box + .box {
+    margin-top: 2.5rem;
+}
+
+.slimbox {
+    padding: 2.25rem 1rem;
+}
+
+.dim {
+    margin-top: 5px;
+    max-width: 50px;
+}
+
+.submit {
+    margin-top: 1.5rem;
+    color: #f1e5e6;
+    background-color: #d3394c;
+    max-width: 80%;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0.625rem 1.25rem;
+}
+
+.submit:hover {
+    background-color: #722040;
+}
+
+/* Component */
+
+
+.js .inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile + label {
+    max-width: 80%;
+    font-size: 1.25rem;
+    /* 20px */
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0.625rem 1.25rem;
+    /* 10px 20px */
+
+}
+
+.no-js .inputfile + label {
+    display: none;
+}
+
+/*.inputfile:focus + label,
+.inputfile.has-focus + label {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+*/
+.inputfile + label * {
+    /* pointer-events: none; */
+    /* in case of FastClick lib use */
+}
+
+.inputfile + label svg {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    fill: currentColor;
+    margin-top: -0.25em;
+    /* 4px */
+    margin-right: 0.25em;
+    /* 4px */
+}
+
+
+/* style 1 */
+
+.inputfile-1 + label {
+    color: #f1e5e6;
+    background-color: #d3394c;
+    
+}
+
+/*.inputfile-1:focus + label,
+.inputfile-1.has-focus + label,*/
+.inputfile-1 + label:hover {
+    background-color: #722040;
+}
+
+.loading {
+    background: linear-gradient(90deg, #722040 0%, #d3394c 100%);
+}
+

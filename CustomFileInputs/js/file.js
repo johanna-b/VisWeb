@@ -1,27 +1,5 @@
-<style type="text/css">
-  #drop_zone{
-    width: 400px;
-    height: 100px;
-    border: 1px solid black;
-  }
 
-</style>
-
-<div id="drop_zone">Drop files here
-</div>
-<input type="file" id="files" name="files[]" accept=".raw" />
-
-<output id="list"></output>
-
-<p id="loadingText"></p>
-<div class="progress mb-2">
-    <div id="loadingProgressBar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-</div>
-
-<script>
-
-
-  function handleFile(files) {
+function handleFile(files) {
     
     f = files[0];
     if (!f) {
@@ -29,12 +7,14 @@
     }
 
     var reader = new FileReader();
-    var loadingProgressText = document.getElementById("loadingText");
-    var loadingProgressBar = document.getElementById("loadingProgressBar");
+    var label = document.getElementById("label");
+    var input = document.getElementById("input");
+    label.innerHTML = f.name;
 
     // Closure to capture the file information.
     reader.onloadstart = function function_name(argument) {
-      // TODO
+      input.style.background = "linear-gradient(90deg, #722040 50%, #d3394c 50%);"
+      console.log(input)
     }
 
     reader.onprogress = function(data) {
@@ -74,9 +54,8 @@
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
   };
 
-  var inn = document.getElementById('files');
+  var inn = document.getElementById('file-1');
   inn.addEventListener('change', handleFileSelect, false);
   var drop = document.getElementById('drop_zone');
   drop.addEventListener('dragover', handleDragOver, false);
   drop.addEventListener('drop', handleFileDrop, false);
-</script>
