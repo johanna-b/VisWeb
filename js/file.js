@@ -1,4 +1,7 @@
 
+
+var volume = null;
+
 function handleFile(files) {
     
     f = files[0];
@@ -30,7 +33,7 @@ function handleFile(files) {
     };
 
     reader.onload = function(data){
-      console.log(new Uint8Array(data.target.result))
+      volume = new Uint8Array(data.target.result)
       input.style.background = "linear-gradient(90deg, #722040 100%, #d3394c 100%)"
       label.innerHTML = f.name;
     }
@@ -56,12 +59,18 @@ function handleFile(files) {
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
   };
 
+
+  var inout = 0
   function handelDragEnter(evt) {
-  	document.getElementById("drop_zone").style.outlineColor = "#d3394c";
+    inout ++;
+    document.getElementById("drop_zone").style.outlineColor = "#d3394c";
   }
 
   function handelDragLeave(evt) {
-  	document.getElementById("drop_zone").style.outlineColor = "#f1e5e6";
+    inout --;
+    if (inout === 0) {
+      document.getElementById("drop_zone").style.outlineColor = "#f1e5e6";
+    }
   }
 
   var inn = document.getElementById('file-1');
@@ -69,5 +78,5 @@ function handleFile(files) {
   var drop = document.getElementById('drop_zone');
   drop.addEventListener('dragover', handleDragOver, false);
   drop.addEventListener('drop', handleFileDrop, false);
-  drop.addEventListener('dragenter', handelDragEnter, false);
   drop.addEventListener('dragleave', handelDragLeave, false);
+  drop.addEventListener('dragenter', handelDragEnter, false);

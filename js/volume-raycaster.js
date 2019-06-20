@@ -30,16 +30,14 @@ var tabFocused = true;
 var newVolumeUpload = true;
 var targetFrameTime = 32;
 var samplingRate = 1.0;
-var WIDTH = 640;
-var HEIGHT = 480;
+var WIDTH = null;
+var HEIGHT = null;
+
+var volDims = null
 
 const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 1.5);
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
 const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
-
-var volumes = {
-	"Engine": "ld2sqwwd3vaq4zf/engine_256x256x128_uint8.raw",
-};
 
 var colormaps = {
 	"Cool Warm": "colormaps/cool-warm-paraview.png",
@@ -50,123 +48,79 @@ var colormaps = {
 	"Samsel Linear YGB 1211G": "colormaps/samsel-linear-ygb-1211g.png",
 };
 
-var loadVolume = function(file, onload) {
-	var m = file.match(fileRegex);
-	var volDims = [265,265,110];
-	
-	var url = "data/engine256b.raw";
-	var req = new XMLHttpRequest();
-	var loadingProgressText = document.getElementById("loadingText");
-	var loadingProgressBar = document.getElementById("loadingProgressBar");
-
-	loadingProgressText.innerHTML = "Loading Volume";
-	loadingProgressBar.setAttribute("style", "width: 0%");
-
-	req.open("GET", url, true);
-	req.responseType = "arraybuffer";
-	req.onprogress = function(evt) {
-		var vol_size = volDims[0] * volDims[1] * volDims[2];
-		var percent = evt.loaded / vol_size * 100;
-		loadingProgressBar.setAttribute("style", "width: " + percent.toFixed(2) + "%");
-	};
-	req.onerror = function(evt) {
-		loadingProgressText.innerHTML = "Error Loading Volume";
-		loadingProgressBar.setAttribute("style", "width: 0%");
-	};
-	req.onload = function(evt) {
-		loadingProgressText.innerHTML = "Loaded Volume";
-		loadingProgressBar.setAttribute("style", "width: 100%");
-		var dataBuffer = req.response;
-		if (dataBuffer) {
-			dataBuffer = new Uint8Array(dataBuffer);
-			console.log(dataBuffer)
-			onload(file, dataBuffer);
-		} else {
-			alert("Unable to load buffer properly from volume?");
-			console.log("no buffer?");
-		}
-	};
-	req.send();
-}
 
 var selectVolume = function() {
-	var selection = document.getElementById("volumeList").value;
-	history.replaceState(history.state, "#" + selection, "#" + selection);
 
-	loadVolume(volumes[selection], function(file, dataBuffer) {
-		var m = file.match(fileRegex);
-		var volDims = [256,256,110];
+	var tex = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_3D, tex);
+	gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
+		volDims[0], volDims[1], volDims[2],
+		gl.RED, gl.UNSIGNED_BYTE, volume);
 
-		var tex = gl.createTexture();
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_3D, tex);
-		gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
-		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
-			volDims[0], volDims[1], volDims[2],
-			gl.RED, gl.UNSIGNED_BYTE, dataBuffer);
+	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
+	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
+		volDims[2] / longestAxis];
 
-		var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
-		var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
-			volDims[2] / longestAxis];
+	gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
+	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
 
-		gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
-		gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
+	newVolumeUpload = true;
+	if (!volumeTexture) {
+		volumeTexture = tex;
+		setInterval(function() {
+			// Save them some battery if they're not viewing the tab
+			if (document.hidden) {
+				return;
+			}
+			var startTime = new Date();
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+			gl.clear(gl.COLOR_BUFFER_BIT);
 
-		newVolumeUpload = true;
-		if (!volumeTexture) {
-			volumeTexture = tex;
-			setInterval(function() {
-				// Save them some battery if they're not viewing the tab
-				if (document.hidden) {
-					return;
-				}
-				var startTime = new Date();
-				gl.clearColor(1.0, 1.0, 1.0, 1.0);
-				gl.clear(gl.COLOR_BUFFER_BIT);
+			// Reset the sampling rate and camera for new volumes
+			if (newVolumeUpload) {
+				camera = new ArcballCamera(defaultEye, center, up, 2, [WIDTH, HEIGHT]);
+				samplingRate = 1.0;
+				gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
+			}
+			projView = mat4.mul(projView, proj, camera.camera);
+			gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
 
-				// Reset the sampling rate and camera for new volumes
-				if (newVolumeUpload) {
-					camera = new ArcballCamera(defaultEye, center, up, 2, [WIDTH, HEIGHT]);
-					samplingRate = 1.0;
-					gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-				}
-				projView = mat4.mul(projView, proj, camera.camera);
-				gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
+			var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
+			gl.uniform3fv(shader.uniforms["eye_pos"], eye);
 
-				var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
-				gl.uniform3fv(shader.uniforms["eye_pos"], eye);
+			gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
+			// Wait for rendering to actually finish
+			gl.finish();
+			var endTime = new Date();
+			var renderTime = endTime - startTime;
+			var targetSamplingRate = renderTime / targetFrameTime;
 
-				gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
-				// Wait for rendering to actually finish
-				gl.finish();
-				var endTime = new Date();
-				var renderTime = endTime - startTime;
-				var targetSamplingRate = renderTime / targetFrameTime;
+			if (takeScreenShot) {
+				takeScreenShot = false;
+				canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
+			}
 
-				if (takeScreenShot) {
-					takeScreenShot = false;
-					canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
-				}
+			// If we're dropping frames, decrease the sampling rate
+			if (!newVolumeUpload && targetSamplingRate > samplingRate) {
+				samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
+				gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
+			}
 
-				// If we're dropping frames, decrease the sampling rate
-				if (!newVolumeUpload && targetSamplingRate > samplingRate) {
-					samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
-					gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-				}
-
-				newVolumeUpload = false;
-				startTime = endTime;
-			}, targetFrameTime);
-		} else {
-			gl.deleteTexture(volumeTexture);
-			volumeTexture = tex;
-		}
-	});
-}
+			newVolumeUpload = false;
+			startTime = endTime;
+		}, targetFrameTime);
+	} 
+	else {
+		gl.deleteTexture(volumeTexture);
+		volumeTexture = tex;
+	}
+};
 
 var selectColormap = function() {
 	var selection = document.getElementById("colormapList").value;
@@ -179,8 +133,40 @@ var selectColormap = function() {
 	colormapImage.src = colormaps[selection];
 }
 
-window.onload = function(){
-	fillVolumeSelector();
+function initVis(){
+
+	// make sure we have all the data we need
+	var bad = false;
+	if (!volume) {
+		alert("no volume data loaded");
+		bad = true
+	}
+
+	var x = document.getElementById("x").value;
+	var y = document.getElementById('y').value;
+	var z = document.getElementById("z").value;
+
+	if (!x) {
+		alert("missing x dimension")
+		bad = true
+	}
+	if (!y) {
+		alert("missing y dimension")
+		bad = true
+	}
+	if (!z) {
+		alert("missing z dimension")
+		bad = true
+	}
+	if (bad) {
+		return
+	}
+
+	volDims = [x,y,z]
+
+	document.getElementById("first").style.display = "none";
+	document.getElementById("second").style.display = "initial"
+
 	fillcolormapSelector();
 
 	canvas = document.getElementById("glcanvas");
@@ -247,16 +233,9 @@ window.onload = function(){
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-	// See if we were linked to a datset
-	if (window.location.hash) {
-		var linkedDataset = decodeURI(window.location.hash.substr(1));
-		if (linkedDataset in volumes) {
-			document.getElementById("volumeList").value = linkedDataset;
-		}
-	}
 
 	// Load the default colormap and upload it, after which we
-	// load the default volume.
+	// load the volume.
 	var colormapImage = new Image();
 	colormapImage.onload = function() {
 		var colormap = gl.createTexture();
@@ -274,15 +253,6 @@ window.onload = function(){
 	colormapImage.src = "colormaps/rainbow.png";
 }
 
-var fillVolumeSelector = function() {
-	var selector = document.getElementById("volumeList");
-	for (v in volumes) {
-		var opt = document.createElement("option");
-		opt.value = v;
-		opt.innerHTML = v;
-		selector.appendChild(opt);
-	}
-}
 
 var fillcolormapSelector = function() {
 	var selector = document.getElementById("colormapList");
@@ -293,4 +263,7 @@ var fillcolormapSelector = function() {
 		selector.appendChild(opt);
 	}
 }
+
+document.getElementById("submit").addEventListener('click', initVis, false)
+
 
