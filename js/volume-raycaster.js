@@ -34,6 +34,10 @@ var WIDTH = null;
 var HEIGHT = null;
 
 var volDims = null
+var gui = null
+var state = {
+	transfer : "Cool Warm"
+}
 
 const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 1.5);
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
@@ -49,7 +53,18 @@ var colormaps = {
 };
 
 
-var selectVolume = function() {
+var draw = function() {
+
+	gui = new dat.GUI();
+	gui.add(state, "transfer", ["Cool Warm", "Matplotlib Plasma", "Matplotlib Virdis", "Rainbow", "Samsel Linear Green", "Samsel Linear YGB 1211G"]).onChange(function (newValue) {
+		var colormapImage = new Image();
+		colormapImage.onload = function() {
+			gl.activeTexture(gl.TEXTURE1);
+			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
+				gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
+		};
+		colormapImage.src = colormaps[newValue];
+	})
 
 	var tex = gl.createTexture();
 	gl.activeTexture(gl.TEXTURE0);
@@ -122,17 +137,6 @@ var selectVolume = function() {
 	}
 };
 
-var selectColormap = function() {
-	var selection = document.getElementById("colormapList").value;
-	var colormapImage = new Image();
-	colormapImage.onload = function() {
-		gl.activeTexture(gl.TEXTURE1);
-		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
-			gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
-	};
-	colormapImage.src = colormaps[selection];
-}
-
 function initVis(){
 
 	// make sure we have all the data we need
@@ -167,7 +171,6 @@ function initVis(){
 	document.getElementById("first").style.display = "none";
 	document.getElementById("second").style.display = "initial"
 
-	fillcolormapSelector();
 
 	canvas = document.getElementById("glcanvas");
 	gl = canvas.getContext("webgl2");
@@ -248,20 +251,9 @@ function initVis(){
 		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
 			gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
 
-		selectVolume();
+		draw();
 	};
-	colormapImage.src = "colormaps/rainbow.png";
-}
-
-
-var fillcolormapSelector = function() {
-	var selector = document.getElementById("colormapList");
-	for (p in colormaps) {
-		var opt = document.createElement("option");
-		opt.value = p;
-		opt.innerHTML = p;
-		selector.appendChild(opt);
-	}
+	colormapImage.src = colormaps[state.transfer];
 }
 
 document.getElementById("submit").addEventListener('click', initVis, false)
