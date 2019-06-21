@@ -36,7 +36,10 @@ var HEIGHT = null;
 var volDims = null
 var gui = null
 var state = {
-	transfer : "Cool Warm"
+	transfer : "Cool Warm",
+	screenshot : function () {
+		takeScreenShot = true;
+	}
 }
 
 const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 1.5);
@@ -56,7 +59,8 @@ var colormaps = {
 var draw = function() {
 
 	gui = new dat.GUI();
-	gui.add(state, "transfer", ["Cool Warm", "Matplotlib Plasma", "Matplotlib Virdis", "Rainbow", "Samsel Linear Green", "Samsel Linear YGB 1211G"]).onChange(function (newValue) {
+	gui.add(state, "transfer", ["Cool Warm", "Matplotlib Plasma", "Matplotlib Virdis", "Rainbow", "Samsel Linear Green", "Samsel Linear YGB 1211G"])
+	.onChange(function (newValue) {
 		var colormapImage = new Image();
 		colormapImage.onload = function() {
 			gl.activeTexture(gl.TEXTURE1);
@@ -65,6 +69,10 @@ var draw = function() {
 		};
 		colormapImage.src = colormaps[newValue];
 	})
+	.name("Transfer function")
+	gui.add(state, "screenshot")
+	.name("Take Screenshot")
+
 
 	var tex = gl.createTexture();
 	gl.activeTexture(gl.TEXTURE0);
