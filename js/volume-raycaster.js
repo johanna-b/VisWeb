@@ -20,16 +20,17 @@ var canvas = null;
 
 var gl = null;
 var shader = null;
-var volumeTexture = null;
+// var volumeTexture = null;
 var colormapTex = null;
-var fileRegex = /.*\/(\w+)_(\d+)x(\d+)x(\d+)_(\w+)\.*/;
+// var fileRegex = /.*\/(\w+)_(\d+)x(\d+)x(\d+)_(\w+)\.*/;
 var proj = null;
 var camera = null;
 var projView = null;
 var tabFocused = true;
 var newVolumeUpload = true;
 var targetFrameTime = 32;
-var samplingRate = 1.0;
+var initSamplingRate = 1.0
+var samplingRate = 1.0; //1.0
 var WIDTH = null;
 var HEIGHT = null;
 
@@ -94,56 +95,51 @@ var draw = function() {
 	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
 
 	newVolumeUpload = true;
-	if (!volumeTexture) {
-		volumeTexture = tex;
-		setInterval(function() {
-			// Save them some battery if they're not viewing the tab
-			if (document.hidden) {
-				return;
-			}
-			var startTime = new Date();
-			gl.clearColor(1.0, 1.0, 1.0, 1.0);
-			gl.clear(gl.COLOR_BUFFER_BIT);
 
-			// Reset the sampling rate and camera for new volumes
-			if (newVolumeUpload) {
-				camera = new ArcballCamera(defaultEye, center, up, 2, [WIDTH, HEIGHT]);
-				samplingRate = 1.0;
-				gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-			}
-			projView = mat4.mul(projView, proj, camera.camera);
-			gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
+	setInterval(function() {
+		// Save them some battery if they're not viewing the tab
+		if (document.hidden) {
+			return;
+		}
+		var startTime = new Date();
+		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
 
-			var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
-			gl.uniform3fv(shader.uniforms["eye_pos"], eye);
+		// Reset the sampling rate and camera for new volumes
+		if (newVolumeUpload) {
+			camera = new ArcballCamera(defaultEye, center, up, 2, [WIDTH, HEIGHT]);
+			samplingRate = initSamplingRate;
+			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
+		}
+		projView = mat4.mul(projView, proj, camera.camera);
+		gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
 
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
-			// Wait for rendering to actually finish
-			gl.finish();
-			var endTime = new Date();
-			var renderTime = endTime - startTime;
-			var targetSamplingRate = renderTime / targetFrameTime;
+		var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
+		gl.uniform3fv(shader.uniforms["eye_pos"], eye);
 
-			if (takeScreenShot) {
-				takeScreenShot = false;
-				canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
-			}
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
+		// Wait for rendering to actually finish
+		gl.finish();
+		var endTime = new Date();
+		var renderTime = endTime - startTime;
+		var targetSamplingRate = renderTime / targetFrameTime;
 
-			// If we're dropping frames, decrease the sampling rate
-			if (!newVolumeUpload && targetSamplingRate > samplingRate) {
-				samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
-				gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-			}
+		if (takeScreenShot) {
+			takeScreenShot = false;
+			canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
+		}
 
-			newVolumeUpload = false;
-			startTime = endTime;
+		// If we're dropping frames, decrease the sampling rate
+		if (!newVolumeUpload && targetSamplingRate > samplingRate) {
+			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
+			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
+		}
+
+		newVolumeUpload = false;
+		startTime = endTime;
 		}, targetFrameTime);
-	} 
-	else {
-		gl.deleteTexture(volumeTexture);
-		volumeTexture = tex;
-	}
-};
+} 
+
 
 function resize(gl) {
   var realToCSSPixels = window.devicePixelRatio;
@@ -213,6 +209,7 @@ function initVis(){
 	HEIGHT = canvas.offsetHeight;
 	resize(gl)
 	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+	// TODO : make adaptive resizing on window changes
 
 
 	proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0,
