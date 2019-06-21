@@ -55,22 +55,9 @@
 
 
 		<!-- renderer -->
-		<div id="second" class="container mt-4" style="display: none;">
-		<div class="row">
-			<div class="col-12 text-center">
-				<canvas id="glcanvas" class="img-fluid" width="640" height="480"></canvas>
-			</div>
-			<div class="mx-auto col-12 col-lg-8 row">
-				<div class="col-12 mt-lg-2 mt-0">
-					<p>Mouse Controls: Left-click + drag to rotate, scroll to zoom, right-click + drag to pan.
-					<br/>
-					Touch Controls: One finger drag to rotate, pinch to zoom, two finger drag to pan.
-					</p>
-					
-				</div>
-			</div>
-		</div>
-	</div>
+		<canvas id="glcanvas" style="display: none; width: 100vw; height: 100vh;"></canvas>
+
+
 	<script type="text/javascript" src="js/dat.gui.js"></script>
 	<script src="js/gl-matrix-min.js"></script>
 	<script src="js/webgl-util.js"></script>

@@ -137,6 +137,25 @@ var draw = function() {
 	}
 };
 
+function resize(gl) {
+  var realToCSSPixels = window.devicePixelRatio;
+
+  // Lookup the size the browser is displaying the canvas in CSS pixels
+  // and compute a size needed to make our drawingbuffer match it in
+  // device pixels.
+  var displayWidth  = Math.floor(gl.canvas.offsetWidth  * realToCSSPixels);
+  var displayHeight = Math.floor(gl.canvas.offsetHeight * realToCSSPixels);
+
+  // Check if the canvas is not the same size.
+  if (gl.canvas.width  !== displayWidth ||
+      gl.canvas.height !== displayHeight) {
+
+    // Make the canvas the same size
+    gl.canvas.width  = displayWidth;
+    gl.canvas.height = displayHeight;
+  }
+}
+
 function initVis(){
 
 	// make sure we have all the data we need
@@ -169,7 +188,7 @@ function initVis(){
 	volDims = [x,y,z]
 
 	document.getElementById("first").style.display = "none";
-	document.getElementById("second").style.display = "initial"
+	document.getElementById("glcanvas").style.display = "block"
 
 
 	canvas = document.getElementById("glcanvas");
@@ -180,8 +199,13 @@ function initVis(){
 	}
 	gl.getExtension('OES_texture_float');        // just in case
     gl.getExtension('OES_texture_float_linear');
-	WIDTH = canvas.getAttribute("width");
-	HEIGHT = canvas.getAttribute("height");
+
+
+	WIDTH = canvas.offsetWidth;
+	HEIGHT = canvas.offsetHeight;
+	resize(gl)
+	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
 
 	proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0,
 		WIDTH / HEIGHT, 0.1, 100);
