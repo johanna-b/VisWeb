@@ -73,10 +73,20 @@ function handleFile(files) {
     }
   }
 
-  var inn = document.getElementById('file-1');
-  inn.addEventListener('change', handleFileSelect, false);
-  var drop = document.getElementById('drop_zone');
-  drop.addEventListener('dragover', handleDragOver, false);
-  drop.addEventListener('drop', handleFileDrop, false);
-  drop.addEventListener('dragleave', handelDragLeave, false);
-  drop.addEventListener('dragenter', handelDragEnter, false);
+
+var inn = document.getElementById('file-1');
+inn.addEventListener('change', handleFileSelect, false);
+var drop = document.getElementById('drop_zone');
+drop.addEventListener('dragover', handleDragOver, false);
+drop.addEventListener('drop', handleFileDrop, false);
+drop.addEventListener('dragleave', handelDragLeave, false);
+drop.addEventListener('dragenter', handelDragEnter, false);
+
+
+
+function reset() {
+  var input = document.getElementById("input");
+  label.innerHTML = "Choose a file&hellip;"
+  input.style.background = "#d3394c"
+  volume = null
+}

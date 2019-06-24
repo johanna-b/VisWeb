@@ -40,10 +40,16 @@ var state = {
 	transfer : "Cool Warm",
 	screenshot : function () {
 		takeScreenShot = true;
+	},
+	reload : function () {
+		document.getElementById("first").style.display = "initial";
+		document.getElementById("glcanvas").style.display = "none"
+		gui.destroy()
+		reset()
 	}
 }
 
-const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 1.5);
+const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); //0.5 0.5 1.5
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
 const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
 
@@ -73,6 +79,8 @@ var draw = function() {
 	.name("Transfer function")
 	gui.add(state, "screenshot")
 	.name("Take Screenshot")
+	gui.add(state, "reload")
+	.name("Load Volume")
 
 
 	var tex = gl.createTexture();
