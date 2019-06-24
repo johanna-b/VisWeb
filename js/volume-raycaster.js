@@ -1,19 +1,4 @@
-var cubeStrip = [
-	1, 1, 0,
-	0, 1, 0,
-	1, 1, 1,
-	0, 1, 1,
-	0, 0, 1,
-	0, 1, 0,
-	0, 0, 0,
-	1, 1, 0,
-	1, 0, 0,
-	1, 1, 1,
-	1, 0, 1,
-	0, 0, 1,
-	1, 0, 0,
-	0, 0, 0
-];
+
 
 var takeScreenShot = false;
 var canvas = null;
@@ -36,18 +21,28 @@ var HEIGHT = null;
 
 var volDims = null
 var gui = null
-var state = {
-	transfer : "Cool Warm",
-	screenshot : function () {
-		takeScreenShot = true;
-	},
-	reload : function () {
-		document.getElementById("first").style.display = "initial";
-		document.getElementById("glcanvas").style.display = "none"
-		gui.destroy()
-		reset()
-	}
+
+
+function makeCubeStrip(xmin, xmax, ymin, ymax, zmin, zmax) {
+	return [
+	xmax, ymax, zmin,
+	xmin, ymax, zmin,
+	xmax, ymax, zmax,
+	xmin, ymax, zmax,
+	xmin, ymin, zmax,
+	xmin, ymax, zmin,
+	xmin, ymin, zmin,
+	xmax, ymax, zmin,
+	xmax, ymin, zmin,
+	xmax, ymax, zmax,
+	xmax, ymin, zmax,
+	xmin, ymin, zmax,
+	xmax, ymin, zmin,
+	xmin, ymin, zmin
+	];
 }
+
+var cubeStrip = null
 
 const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); //0.5 0.5 1.5
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
@@ -61,6 +56,33 @@ var colormaps = {
 	"Samsel Linear Green": "colormaps/samsel-linear-green.png",
 	"Samsel Linear YGB 1211G": "colormaps/samsel-linear-ygb-1211g.png",
 };
+
+var state = {
+	transfer : "Cool Warm",
+	screenshot : function () {
+		takeScreenShot = true;
+	},
+	reload : function () {
+		document.getElementById("first").style.display = "initial";
+		document.getElementById("glcanvas").style.display = "none"
+		// gui.__controllers.forEach(controller => controller.setValue(controller.initialValue));
+		// gui.__folders.forEach(controller => console.log(controller))
+		// console.log(gui)
+		gui.destroy()
+		reset()
+		state = initialState
+		initialState = Object.assign({},state)
+	},
+	xmin : 0,
+	xmax : 1,
+	ymin : 0,
+	ymax : 1,
+	zmin : 0,
+	zmax : 1
+}
+
+
+var initialState = Object.assign({},state)
 
 
 var draw = function() {
@@ -81,6 +103,38 @@ var draw = function() {
 	.name("Take Screenshot")
 	gui.add(state, "reload")
 	.name("Load Volume")
+
+	var clipFolder = gui.addFolder("Clipping Planes")
+	clipFolder.add(state, 'xmin').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
+		allowSlow = true;
+	})
+	clipFolder.add(state, 'xmax').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
+		allowSlow = true;
+	})
+	clipFolder.add(state, 'ymin').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
+		allowSlow = true;
+	})
+	clipFolder.add(state, 'ymax').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
+		allowSlow = true;
+	})
+	clipFolder.add(state, 'zmin').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
+		allowSlow = true;
+	})
+	clipFolder.add(state, 'zmax').min(0).max(1).step(0.01)
+	.onChange(function () {
+		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
+		allowSlow = true;
+	})
 
 
 	var tex = gl.createTexture();
@@ -257,6 +311,7 @@ function initVis(){
 
 	var vbo = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+	cubeStrip = makeCubeStrip(state.xmin, state.xmax, state.ymin, state.ymax, state.zmin, state.zmax)
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeStrip), gl.STATIC_DRAW);
 
 	gl.enableVertexAttribArray(0);
@@ -268,6 +323,9 @@ function initVis(){
 	gl.uniform1i(shader.uniforms["volume"], 0);
 	gl.uniform1i(shader.uniforms["colormap"], 1);
 	gl.uniform1f(shader.uniforms["dt_scale"], 1.0);
+
+	gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
+	gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax])
 
 	// Setup required OpenGL state for drawing the back faces and
 	// composting with the background color
