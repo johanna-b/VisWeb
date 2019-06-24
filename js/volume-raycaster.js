@@ -27,7 +27,7 @@ var proj = null;
 var camera = null;
 var projView = null;
 var tabFocused = true;
-var newVolumeUpload = true;
+var allowSlow = true;
 var targetFrameTime = 32;
 var initSamplingRate = 1.0
 var samplingRate = 1.0; //1.0
@@ -94,7 +94,7 @@ var draw = function() {
 	gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
 	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
 
-	newVolumeUpload = true;
+	allowSlow = true;
 
 	setInterval(function() {
 		// Save them some battery if they're not viewing the tab
@@ -105,12 +105,7 @@ var draw = function() {
 		gl.clearColor(1.0, 1.0, 1.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
-		// Reset the sampling rate and camera for new volumes
-		if (newVolumeUpload) {
-			camera = new ArcballCamera(defaultEye, center, up, 2, [WIDTH, HEIGHT]);
-			samplingRate = initSamplingRate;
-			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-		}
+		
 		projView = mat4.mul(projView, proj, camera.camera);
 		gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
 
@@ -130,12 +125,12 @@ var draw = function() {
 		}
 
 		// If we're dropping frames, decrease the sampling rate
-		if (!newVolumeUpload && targetSamplingRate > samplingRate) {
+		if (!allowSlow && targetSamplingRate > samplingRate) {
 			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
 			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
 		}
 
-		newVolumeUpload = false;
+		allowSlow = false;
 		startTime = endTime;
 		}, targetFrameTime);
 } 
@@ -157,7 +152,16 @@ function resize(gl) {
     // Make the canvas the same size
     gl.canvas.width  = displayWidth;
     gl.canvas.height = displayHeight;
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   }
+}
+
+window.onresize = function () {
+	resize(gl)
+	WIDTH = canvas.offsetWidth;
+	HEIGHT = canvas.offsetHeight;	
+	proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0, WIDTH / HEIGHT, 0.1, 100);
+	allowSlow = true
 }
 
 function initVis(){
@@ -208,7 +212,6 @@ function initVis(){
 	WIDTH = canvas.offsetWidth;
 	HEIGHT = canvas.offsetHeight;
 	resize(gl)
-	gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 	// TODO : make adaptive resizing on window changes
 
 
