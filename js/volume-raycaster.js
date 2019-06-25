@@ -135,6 +135,7 @@ var draw = function() {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
 	})
+	clipFolder.open()
 
 
 	var tex = gl.createTexture();
@@ -159,6 +160,7 @@ var draw = function() {
 	allowSlow = true;
 
 	setInterval(function() {
+		// shader.use()
 		// Save them some battery if they're not viewing the tab
 		if (document.hidden) {
 			return;
@@ -191,6 +193,15 @@ var draw = function() {
 			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
 			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
 		}
+
+		// gl.enable(gl.SCISSOR_TEST)
+
+		// gl.scissor(0,0,500,500)
+		// gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		// gl.clear(gl.COLOR_BUFFER_BIT);
+
+		// gl.disable(gl.SCISSOR_TEST);
+
 
 		allowSlow = false;
 		startTime = endTime;
@@ -267,8 +278,8 @@ function initVis(){
 		alert("Unable to initialize WebGL2. Your browser may not support it");
 		return;
 	}
-	gl.getExtension('OES_texture_float');        // just in case
-    gl.getExtension('OES_texture_float_linear');
+	// gl.getExtension('OES_texture_float');        // just in case
+ //    gl.getExtension('OES_texture_float_linear');
 
 
 	WIDTH = canvas.offsetWidth;
