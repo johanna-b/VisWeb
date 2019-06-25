@@ -5,9 +5,7 @@ var canvas = null;
 
 var gl = null;
 var shader = null;
-// var volumeTexture = null;
 var colormapTex = null;
-// var fileRegex = /.*\/(\w+)_(\d+)x(\d+)x(\d+)_(\w+)\.*/;
 var proj = null;
 var camera = null;
 var projView = null;
@@ -44,7 +42,7 @@ function makeCubeStrip(xmin, xmax, ymin, ymax, zmin, zmax) {
 
 var cubeStrip = null
 
-const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); //0.5 0.5 1.5
+const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); 
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
 const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
 
@@ -65,9 +63,6 @@ var state = {
 	reload : function () {
 		document.getElementById("first").style.display = "initial";
 		document.getElementById("glcanvas").style.display = "none"
-		// gui.__controllers.forEach(controller => controller.setValue(controller.initialValue));
-		// gui.__folders.forEach(controller => console.log(controller))
-		// console.log(gui)
 		gui.destroy()
 		reset()
 		state = initialState
@@ -160,7 +155,6 @@ var draw = function() {
 	allowSlow = true;
 
 	setInterval(function() {
-		// shader.use()
 		// Save them some battery if they're not viewing the tab
 		if (document.hidden) {
 			return;
@@ -193,15 +187,6 @@ var draw = function() {
 			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
 			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
 		}
-
-		// gl.enable(gl.SCISSOR_TEST)
-
-		// gl.scissor(0,0,500,500)
-		// gl.clearColor(1.0, 1.0, 1.0, 1.0);
-		// gl.clear(gl.COLOR_BUFFER_BIT);
-
-		// gl.disable(gl.SCISSOR_TEST);
-
 
 		allowSlow = false;
 		startTime = endTime;
@@ -278,14 +263,10 @@ function initVis(){
 		alert("Unable to initialize WebGL2. Your browser may not support it");
 		return;
 	}
-	// gl.getExtension('OES_texture_float');        // just in case
- //    gl.getExtension('OES_texture_float_linear');
-
 
 	WIDTH = canvas.offsetWidth;
 	HEIGHT = canvas.offsetHeight;
 	resize(gl)
-	// TODO : make adaptive resizing on window changes
 
 
 	proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0,
