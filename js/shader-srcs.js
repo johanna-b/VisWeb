@@ -87,3 +87,28 @@ void main(void) {
 	}
 }`;
 
+
+var boxVertShader =
+` #version 300 es
+  in vec4 a_position;
+
+  void main() {
+
+    // gl_Position is a special variable a vertex shader
+    // is responsible for setting
+    gl_Position = a_position;
+  }
+`
+
+var boxFragShader = 
+` #version 300 es
+  precision highp float;
+  uniform highp sampler3D volume;
+  out vec4 color;
+
+  void main() {
+    // gl_FragColor is a special variable a fragment shader
+    // is responsible for setting
+    float val = texture(volume, vec3(100,100,100)).r;
+    color = vec4(val, val, val, 1); // return redish-purple
+  }`

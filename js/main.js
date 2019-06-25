@@ -111,6 +111,7 @@ function initVis() {
 	clipFolder.open()
 
 	initVol()
+	initSlice()
 }
 
 

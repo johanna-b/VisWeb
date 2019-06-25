@@ -159,7 +159,7 @@ function initVol(){
 	gl.enableVertexAttribArray(0);
 	gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
-	shader = new Shader(vertShader, fragShader);
+	shader = new Shader(vertShader, fragShader, gl);
 	shader.use();
 
 	gl.uniform1i(shader.uniforms["volume"], 0);

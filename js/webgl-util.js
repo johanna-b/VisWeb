@@ -283,9 +283,10 @@ var pointDist = function(a, b) {
 	return Math.sqrt(Math.pow(v[0], 2.0) + Math.pow(v[1], 2.0));
 }
 
-var Shader = function(vertexSrc, fragmentSrc) {
+var Shader = function(vertexSrc, fragmentSrc, context) {
 	var self = this;
-	this.program = compileShader(vertexSrc, fragmentSrc);
+	this.context = context
+	this.program = this.compileShader(vertexSrc, fragmentSrc);
 
 	var regexUniform = /uniform[^;]+[ ](\w+);/g
 	var matchUniformName = /uniform[^;]+[ ](\w+);/
@@ -309,55 +310,55 @@ var Shader = function(vertexSrc, fragmentSrc) {
 	}
 
 	for (var unif in this.uniforms) {
-		this.uniforms[unif] = gl.getUniformLocation(this.program, unif);
+		this.uniforms[unif] = this.context.getUniformLocation(this.program, unif);
 	}
 }
 
 Shader.prototype.use = function() {
-	gl.useProgram(this.program);
+	this.context.useProgram(this.program);
 }
 
 // Compile and link the shaders vert and frag. vert and frag should contain
 // the shader source code for the vertex and fragment shaders respectively
 // Returns the compiled and linked program, or null if compilation or linking failed
-var compileShader = function(vert, frag){
-	var vs = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vs, vert);
-	gl.compileShader(vs);
-	if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)){
+Shader.prototype.compileShader = function(vert, frag){
+	var vs = this.context.createShader(this.context.VERTEX_SHADER);
+	this.context.shaderSource(vs, vert);
+	this.context.compileShader(vs);
+	if (!this.context.getShaderParameter(vs, this.context.COMPILE_STATUS)){
 		alert("Vertex shader failed to compile, see console for log");
-		console.log(gl.getShaderInfoLog(vs));
+		console.log(this.context.getShaderInfoLog(vs));
 		return null;
 	}
 
-	var fs = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(fs, frag);
-	gl.compileShader(fs);
-	if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)){
+	var fs = this.context.createShader(this.context.FRAGMENT_SHADER);
+	this.context.shaderSource(fs, frag);
+	this.context.compileShader(fs);
+	if (!this.context.getShaderParameter(fs, this.context.COMPILE_STATUS)){
 		alert("Fragment shader failed to compile, see console for log");
-		console.log(gl.getShaderInfoLog(fs));
+		console.log(this.context.getShaderInfoLog(fs));
 		return null;
 	}
 
-	var program = gl.createProgram();
-	gl.attachShader(program, vs);
-	gl.attachShader(program, fs);
-	gl.linkProgram(program);
-	if (!gl.getProgramParameter(program, gl.LINK_STATUS)){
+	var program = this.context.createProgram();
+	this.context.attachShader(program, vs);
+	this.context.attachShader(program, fs);
+	this.context.linkProgram(program);
+	if (!this.context.getProgramParameter(program, this.context.LINK_STATUS)){
 		alert("Shader failed to link, see console for log");
-		console.log(gl.getProgramInfoLog(program));
+		console.log(this.context.getProgramInfoLog(program));
 		return null;
 	}
 	return program;
 }
 
-var getGLExtension = function(ext) {
-	if (!gl.getExtension(ext)) {
-		alert("Missing " + ext + " WebGL extension");
-		return false;
-	}
-	return true;
-}
+// var getGLExtension = function(ext) {
+// 	if (!gl.getExtension(ext)) {
+// 		alert("Missing " + ext + " WebGL extension");
+// 		return false;
+// 	}
+// 	return true;
+// }
 
 var Buffer = function(capacity, dtype) {
 	this.len = 0;
