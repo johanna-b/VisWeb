@@ -189,3 +189,24 @@ a:focus {
 .inputfile-1 + label:hover {
     background-color: #722040;
 }
+
+/* Renderer */
+
+canvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    position: absolute;
+}
+
+.over {
+    border: 2px solid red;
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    z-index: 2;
+}
+
+#x_box {
+
+}

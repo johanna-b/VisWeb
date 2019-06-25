@@ -55,7 +55,11 @@
 
 
 		<!-- renderer -->
-		<canvas id="glcanvas" style="display: none; width: 100vw; height: 100vh;"></canvas>
+		<div id="second" style="display: none;">
+			<canvas id="glcanvas"></canvas>
+			<!-- <div id="x_box" class="over"></div> -->
+			<canvas id="slcanvas" class="over"></canvas>
+		</div>
 
 
 	<script type="text/javascript" src="js/dat.gui.js"></script>
@@ -63,7 +67,9 @@
 	<script src="js/webgl-util.js"></script>
 	<script src="js/shader-srcs.js"></script>
 	<script src="js/FileSaver.js"></script>
+	<script type="text/javascript" src="js/helpers.js"></script>
 	<script src="js/volume-raycaster.js"></script>
+	<script type="text/javascript" src="js/main.js"></script>
 		
 
 	</body>
