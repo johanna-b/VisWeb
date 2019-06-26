@@ -69,15 +69,41 @@ function initSlice(){
 		volDims[0], volDims[1], volDims[2],
 		gl.RED, gl.UNSIGNED_BYTE, volume);
 
-	// var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
-	// var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
-	// 	volDims[2] / longestAxis];
+	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
+	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
+		volDims[2] / longestAxis];
+	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
 
 	drawSlices = function() {
+
+		// TODO: scaling for none sqaure volumes
+
 		gl.clearColor(1.0, 1.0, 1.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		gl.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
+
+
+		//draw the x slice
+		var m = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(-2,0,0))
+		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, m)
+		gl.uniform1i(shader.uniforms["axis"], 1)
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
+		// Wait for rendering to actually finish
+		gl.finish();
+
+		// draw the y slice
+		var m = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(0,0,0))
+		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, m)
+		gl.uniform1i(shader.uniforms["axis"], 2)
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
+		// Wait for rendering to actually finish
+		gl.finish();
+
+		// draw the z slice
+		var m = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(2,0,0))
+		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, m)
+		gl.uniform1i(shader.uniforms["axis"], 3)
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
 		gl.finish();

@@ -94,11 +94,25 @@ var boxVertShader =
   out vec3 samp;
 
   uniform vec3 slices;
+  uniform mat4 scaletrans;
+  uniform int axis;
+  uniform vec3 volume_scale;
 
   void main() {
-    gl_Position = vec4(pos, 1);
-    samp.xy = pos.xy * 0.5 + vec2(0.5);
-    samp.z = slices.z;
+    gl_Position = scaletrans * vec4(pos, 1);
+    // vec3 pos_scale = pos * volume_scale;
+    if (axis == 1) {
+    	samp.yz = pos.xy * 0.5 + vec2(0.5);
+    	samp.x = slices.x;
+    }
+    if (axis == 2) {
+    	samp.xz = pos.xy * 0.5 + vec2(0.5);
+    	samp.y = slices.y;
+    }
+    if (axis == 3) {
+    	samp.xy = pos.xy * 0.5 + vec2(0.5);
+    	samp.z = slices.z;
+    }
   }
 `
 
