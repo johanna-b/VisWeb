@@ -90,13 +90,15 @@ void main(void) {
 
 var boxVertShader =
 ` #version 300 es
-  in vec4 a_position;
+  layout(location=0) in vec3 pos;
+  out vec3 samp;
+
+  uniform vec3 slices;
 
   void main() {
-
-    // gl_Position is a special variable a vertex shader
-    // is responsible for setting
-    gl_Position = a_position;
+    gl_Position = vec4(pos, 1);
+    samp.xy = pos.xy * 0.5 + vec2(0.5);
+    samp.z = slices.z;
   }
 `
 
@@ -104,11 +106,10 @@ var boxFragShader =
 ` #version 300 es
   precision highp float;
   uniform highp sampler3D volume;
+  in vec3 samp;
   out vec4 color;
 
   void main() {
-    // gl_FragColor is a special variable a fragment shader
-    // is responsible for setting
-    float val = texture(volume, vec3(100,100,100)).r;
-    color = vec4(val, val, val, 1); // return redish-purple
+    float val = texture(volume, samp).r;
+	color = vec4(0.0,0.0,0.0,val);
   }`

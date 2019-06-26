@@ -1,5 +1,7 @@
 
 
+var drawSlices = null
+
 function initSlice(){
 
 
@@ -36,12 +38,10 @@ function initSlice(){
 	var vbo = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 	var cubeStrip = [
-  	0, 0,
-  	0, 1,
-  	1, 1,
-  	0, 0,
-  	1, 1,
-  	1, 0
+  	-1.0, -1.0,
+  	-1.0, 1.0,
+  	1.0, -1.0,
+  	1.0, 1.0
 	]
 
 
@@ -55,7 +55,7 @@ function initSlice(){
 
 	shader = new Shader(boxVertShader, boxFragShader, gl);
 	shader.use();
-	gl.uniform1i(shader.uniforms["volume"], 1);
+	gl.uniform1i(shader.uniforms["volume"], 0);
 
 	var tex = gl.createTexture();
 	gl.activeTexture(gl.TEXTURE0);
@@ -69,45 +69,20 @@ function initSlice(){
 		volDims[0], volDims[1], volDims[2],
 		gl.RED, gl.UNSIGNED_BYTE, volume);
 
-	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
-	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
-		volDims[2] / longestAxis];
+	// var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
+	// var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
+	// 	volDims[2] / longestAxis];
 
-	// gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
-	// gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
-
-	allowSlow = true;
-
-	setInterval(function() {
-		// Save them some battery if they're not viewing the tab
-		if (document.hidden) {
-			return;
-		}
-		var startTime = new Date();
+	drawSlices = function() {
 		gl.clearColor(1.0, 1.0, 1.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
-
+		gl.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
 		gl.finish();
-		var endTime = new Date();
-		var renderTime = endTime - startTime;
-		var targetSamplingRate = renderTime / targetFrameTime;
-
-		if (takeScreenShot) {
-			takeScreenShot = false;
-			canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
 		}
 
-		// If we're dropping frames, decrease the sampling rate
-		if (!allowSlow && targetSamplingRate > samplingRate) {
-			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
-			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-		}
-
-		allowSlow = false;
-		startTime = endTime;
-		}, targetFrameTime);
+	drawSlices();
 
 }

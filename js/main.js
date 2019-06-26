@@ -14,12 +14,17 @@ var state = {
 		state = initialState
 		initialState = Object.assign({},state)
 	},
+	// clipping planes
 	xmin : 0,
 	xmax : 1,
 	ymin : 0,
 	ymax : 1,
 	zmin : 0,
-	zmax : 1
+	zmax : 1,
+	// slices
+	xslice : 0.5,
+	yslice : 0.5,
+	zslice : 0.5
 }
 
 
@@ -109,6 +114,21 @@ function initVis() {
 		allowSlow = true;
 	})
 	clipFolder.open()
+
+	var sliceFolder = gui.addFolder("Slices")
+	sliceFolder.add(state, 'xslice').min(0).max(1).step(0.01)
+	.onChange(function () {
+		drawSlices();
+	})
+	sliceFolder.add(state, 'yslice').min(0).max(1).step(0.01)
+	.onChange(function () {
+		drawSlices();
+	})
+	sliceFolder.add(state, 'zslice').min(0).max(1).step(0.01)
+	.onChange(function () {
+		drawSlices();
+	})
+	sliceFolder.open()
 
 	initVol()
 	initSlice()
