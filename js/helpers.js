@@ -36,3 +36,7 @@ function resize(gl) {
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   }
 }
+
+function toGLPixels(p) {
+	return window.devicePixelRatio * p;
+}

@@ -22,6 +22,8 @@ var state = {
 	zmin : 0,
 	zmax : 1,
 	// slices
+	display : true,
+	layout : "Horizontal",
 	xslice : 0.5,
 	yslice : 0.5,
 	zslice : 0.5
@@ -116,6 +118,34 @@ function initVis() {
 	clipFolder.open()
 
 	var sliceFolder = gui.addFolder("Slices")
+	sliceFolder.add(state, 'display')
+	.onChange(function (b) {
+		var s = document.getElementById("slices")
+		if (b) {
+			s.style.display = "initial"
+		}
+		else {
+			s.style.display = "none"
+		}
+	})
+	sliceFolder.add(state, 'layout', ["Horizontal", "Vertical", "Corner"])
+	.onChange(function (l) {
+		var s = document.getElementById("slices")
+		if (l == "Horizontal") {
+			s.style.width = 600 + "px"
+			s.style.height = 200 + "px"
+		}
+		if (l == "Vertical") {
+			s.style.width = 200 + "px"
+			s.style.height = 600 + "px"
+		}
+		if (l == "Corner") {
+			s.style.width = 400 + "px"
+			s.style.height = 400 + "px"
+		}
+		console.log(s)
+		drawSlices();
+	})
 	sliceFolder.add(state, 'xslice').min(0).max(1).step(0.01)
 	.onChange(function () {
 		drawSlices();
