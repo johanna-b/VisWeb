@@ -100,17 +100,16 @@ var boxVertShader =
 
   void main() {
     gl_Position = scaletrans * vec4(pos, 1);
-    // vec3 pos_scale = pos * volume_scale;
     if (axis == 1) {
-    	samp.yz = pos.xy * 0.5 + vec2(0.5);
+    	samp.yz = pos.xy * volume_scale.yz * 0.5 + vec2(0.5);
     	samp.x = slices.x;
     }
     if (axis == 2) {
-    	samp.xz = pos.xy * 0.5 + vec2(0.5);
+    	samp.xz = pos.xy * volume_scale.xz * 0.5 + vec2(0.5);
     	samp.y = slices.y;
     }
     if (axis == 3) {
-    	samp.xy = pos.xy * 0.5 + vec2(0.5);
+    	samp.xy = pos.xy * volume_scale.xy * 0.5 + vec2(0.5);
     	samp.z = slices.z;
     }
   }
@@ -124,6 +123,12 @@ var boxFragShader =
   out vec4 color;
 
   void main() {
+  	if (any(greaterThan(samp, vec3(1.0)))) {
+  		discard;
+  	}
+  	if (any(lessThan(samp, vec3(0.0)))) {
+  		discard;
+  	}
     float val = texture(volume, samp).r;
-	color = vec4(0.0,0.0,0.0,val);
+	color = vec4(1.0,1.0,1.0,val);
   }`

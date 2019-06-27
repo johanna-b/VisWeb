@@ -46,7 +46,8 @@ function initSlice(){
 
 
 	gl.enable(gl.BLEND);
-	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+	// gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // use for white background
+	gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // new for black background
 
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeStrip), gl.STATIC_DRAW);
 
@@ -62,6 +63,7 @@ function initSlice(){
 	gl.bindTexture(gl.TEXTURE_3D, tex);
 	gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //just in case
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -70,15 +72,16 @@ function initSlice(){
 		gl.RED, gl.UNSIGNED_BYTE, volume);
 
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
-	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
-		volDims[2] / longestAxis];
+	var volScale = [longestAxis / volDims[0], longestAxis / volDims[1],
+		longestAxis / volDims[2]];
 	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
+	console.log(volScale)
 
 	drawSlices = function() {
 
 		// TODO: scaling for none sqaure volumes
 
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		gl.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
