@@ -29,6 +29,20 @@ function initSlice(){
 		return;
 	}
 
+	var s = document.getElementById("slices")
+	if (state.layout == "Horizontal") {
+		s.style.width = 600 + "px"
+		s.style.height = 200 + "px"
+	}
+	if (state.layout == "Vertical") {
+		s.style.width = 200 + "px"
+		s.style.height = 600 + "px"
+	}
+	if (state.layout == "Corner") {
+		s.style.width = 400 + "px"
+		s.style.height = 400 + "px"
+	}
+
 	resize(gl)
 
 	// Setup VAO and VBO to render the cube to run the raymarching shader
@@ -79,7 +93,7 @@ function initSlice(){
 	var xBox = document.getElementById("x_box");
 	var yBox = document.getElementById("y_box");
 	var zBox = document.getElementById("z_box");
-	console.log(yBox);
+	console.log(xBox);
 
 	drawSlices = function() {
 
@@ -95,9 +109,9 @@ function initSlice(){
 			xBox.style.width = bw + "px"
 			yBox.style.width = bw + "px"
 			zBox.style.width = bw + "px"
-			xBox.style.height = h + "px"
-			yBox.style.height = h + "px"
-			zBox.style.height = h + "px"
+			xBox.style.height = h - 5 + "px"
+			yBox.style.height = h - 5 + "px"
+			zBox.style.height = h - 5 + "px"
 			yBox.style.left = bw + 5 + "px"
 			zBox.style.left = 2 * bw + 10 + "px"
 			yBox.style.top = 0 + "px"
@@ -106,15 +120,16 @@ function initSlice(){
 			var mx = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(-2,0,0))
 			var my = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(0,0,0))
 			var mz = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/3,1,1)), vec3.fromValues(2,0,0))
+
 		}
 
 		if (state.layout == "Vertical") {
 
 			var bh = h / 3 - 5
 
-			xBox.style.width = w + "px"
-			yBox.style.width = w + "px"
-			zBox.style.width = w + "px"
+			xBox.style.width = w - 5 + "px"
+			yBox.style.width = w - 5+ "px"
+			zBox.style.width = w - 5 + "px"
 			xBox.style.height = bh + "px"
 			yBox.style.height = bh + "px"
 			zBox.style.height = bh + "px"
@@ -123,9 +138,30 @@ function initSlice(){
 			yBox.style.top = bh + 5 + "px"
 			zBox.style.top = 2 * bh + 10 + "px"
 
-			var mx = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1,1/3,1)), vec3.fromValues(0,-2,0))
+			var mx = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1,1/3,1)), vec3.fromValues(0,2,0))
 			var my = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1,1/3,1)), vec3.fromValues(0,0,0))
-			var mz = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1,1/3,1)), vec3.fromValues(0,2,0))
+			var mz = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1,1/3,1)), vec3.fromValues(0,-2,0))
+		}
+
+		if (state.layout == "Corner") {
+
+			var bh = h / 2 - 5
+			var bw = w / 2 -5
+
+			xBox.style.width = bw + "px"
+			yBox.style.width = bw + "px"
+			zBox.style.width = bw + "px"
+			xBox.style.height = bh + "px"
+			yBox.style.height = bh + "px"
+			zBox.style.height = bh + "px"
+			yBox.style.left = 0 + "px"
+			zBox.style.left = bw + 5 + "px"
+			yBox.style.top = bh + 5 + "px"
+			zBox.style.top = 0 + "px"
+
+			var mx = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/2,1/2,1)), vec3.fromValues(-1,1,0))
+			var my = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/2,1/2,1)), vec3.fromValues(-1,-1,0))
+			var mz = mat4.translate(mat4.create(), mat4.fromScaling(mat4.create(), vec3.fromValues(1/2,1/2,1)), vec3.fromValues(1,1,0))
 		}
 
 
@@ -137,6 +173,9 @@ function initSlice(){
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.scissor(toGLPixels(xBox.offsetLeft), toGLPixels(h - xBox.offsetTop - xBox.offsetHeight),
 				toGLPixels(xBox.offsetWidth), toGLPixels(xBox.offsetHeight));
+		gl.uniform2iv(shader.uniforms["comp"], 
+			[toGLPixels(xBox.offsetLeft + xBox.offsetWidth * state.yslice), 
+			 toGLPixels(h - xBox.offsetTop - xBox.offsetHeight + xBox.offsetHeight * state.zslice)]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mx)
 		gl.uniform1i(shader.uniforms["axis"], 1)
@@ -149,6 +188,9 @@ function initSlice(){
 		// draw the y slice
 		gl.scissor(toGLPixels(yBox.offsetLeft), toGLPixels(h - yBox.offsetTop - yBox.offsetHeight),
 				toGLPixels(yBox.offsetWidth), toGLPixels(yBox.offsetHeight));
+		gl.uniform2iv(shader.uniforms["comp"], 
+			[toGLPixels(yBox.offsetLeft + yBox.offsetWidth * state.xslice),
+			 toGLPixels(h - yBox.offsetTop - yBox.offsetHeight + yBox.offsetHeight * state.zslice)]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, my)
 		gl.uniform1i(shader.uniforms["axis"], 2)
@@ -159,6 +201,9 @@ function initSlice(){
 		// draw the z slice
 		gl.scissor(toGLPixels(zBox.offsetLeft), toGLPixels(h - zBox.offsetTop - zBox.offsetHeight),
 				toGLPixels(zBox.offsetWidth), toGLPixels(zBox.offsetHeight));
+		gl.uniform2iv(shader.uniforms["comp"], 
+			[toGLPixels(zBox.offsetLeft + zBox.offsetWidth * state.xslice),
+			 toGLPixels(h - zBox.offsetTop - zBox.offsetHeight + zBox.offsetHeight * state.yslice)]);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mz)
 		gl.uniform1i(shader.uniforms["axis"], 3)

@@ -10,6 +10,7 @@ var state = {
 		document.getElementById("first").style.display = "initial";
 		document.getElementById("second").style.display = "none"
 		gui.destroy()
+		document.getElementById("body").classList.remove("bound")
 		reset()
 		state = initialState
 		initialState = Object.assign({},state)
@@ -64,7 +65,8 @@ function initVis() {
 	volDims = [x,y,z]
 
 	document.getElementById("first").style.display = "none";
-	document.getElementById("second").style.display = "block"
+	document.getElementById("second").style.display = "block";
+	document.getElementById("body").classList.add("bound");
 
 
 	gui = new dat.GUI();
@@ -146,6 +148,7 @@ function initVis() {
 		console.log(s)
 		drawSlices();
 	})
+	.listen()
 	sliceFolder.add(state, 'xslice').min(0).max(1).step(0.01)
 	.onChange(function () {
 		drawSlices();
