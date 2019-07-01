@@ -45,6 +45,7 @@ function initVis() {
 	var x = document.getElementById("x").value;
 	var y = document.getElementById('y').value;
 	var z = document.getElementById("z").value;
+	type = document.getElementById("type").value;
 
 	if (!x) {
 		alert("missing x dimension")
@@ -58,8 +59,19 @@ function initVis() {
 		alert("missing z dimension")
 		bad = true
 	}
+	if (!type) {
+		alert("missing datatype")
+		bad = true
+	}
 	if (bad) {
 		return
+	}
+
+	if (type == "8bit") {
+		volume = new Uint8Array(volume)
+	}
+	if (type == "16bit") {
+		volume = new Uint16Array(volume)
 	}
 
 	volDims = [x,y,z]
@@ -145,7 +157,6 @@ function initVis() {
 			s.style.width = 400 + "px"
 			s.style.height = 400 + "px"
 		}
-		console.log(s)
 		drawSlices();
 	})
 	.listen()

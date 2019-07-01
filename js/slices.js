@@ -10,17 +10,11 @@ function initSlice(){
 
 	var gl = null;
 	var shader = null;
-	var colormapTex = null;
-	var proj = null;
-	var camera = null;
-	var projView = null;
-	var tabFocused = true;
-	var allowSlow = true;
-	var targetFrameTime = 32;
-	var initSamplingRate = 1.0
-	var samplingRate = 1.0; //1.0
-	var WIDTH = null;
-	var HEIGHT = null;
+
+	var texFormat = null;
+	var texStorageFormat = null;
+	var filter = null;
+	var texType = null;
 
 	canvas = document.getElementById("slcanvas");
 	gl = canvas.getContext("webgl2");
@@ -68,22 +62,36 @@ function initSlice(){
 	gl.enableVertexAttribArray(0);
 	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-	shader = new Shader(boxVertShader, boxFragShader, gl);
+	if (type == "8bit") {
+		texType = gl.UNSIGNED_BYTE
+		texStorageFormat = gl.R8
+		texFormat = gl.RED
+		filter = gl.LINEAR
+		shader = new Shader(boxVertShader, boxFragShader, gl);
+	}
+	if (type == "16bit") {
+		texType = gl.UNSIGNED_SHORT
+		texStorageFormat = gl.R16UI
+		texFormat = gl.RED_INTEGER;
+		filter = gl.NEAREST
+		shader = new Shader(boxVertShader, boxFragShaderInt, gl);
+	}
+
 	shader.use();
 	gl.uniform1i(shader.uniforms["volume"], 0);
 
 	var tex = gl.createTexture();
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_3D, tex);
-	gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); //just in case
+	gl.texStorage3D(gl.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter); //just in case
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
 		volDims[0], volDims[1], volDims[2],
-		gl.RED, gl.UNSIGNED_BYTE, volume);
+		texFormat, texType, volume);
 
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
 	var volScale = [longestAxis / volDims[0], longestAxis / volDims[1],
@@ -93,7 +101,6 @@ function initSlice(){
 	var xBox = document.getElementById("x_box");
 	var yBox = document.getElementById("y_box");
 	var zBox = document.getElementById("z_box");
-	console.log(xBox);
 
 	drawSlices = function() {
 

@@ -17,8 +17,14 @@ var samplingRate = 1.0; //1.0
 var WIDTH = null;
 var HEIGHT = null;
 
-var volDims = null
-var cubeStrip = null
+var volDims = null;
+var type = null;
+var cubeStrip = null;
+
+var texFormat = null;
+var texStorageFormat = null;
+var filter = null;
+var texType = null;
 
 const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); 
 const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
@@ -36,18 +42,18 @@ var colormaps = {
 
 var drawVol = function() {
 
-
 	var tex = gl.createTexture();
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_3D, tex);
-	gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texStorage3D(gl.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
 		volDims[0], volDims[1], volDims[2],
-		gl.RED, gl.UNSIGNED_BYTE, volume);
+		texFormat, texType, volume);
 
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
 	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
@@ -159,7 +165,21 @@ function initVol(){
 	gl.enableVertexAttribArray(0);
 	gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
 
-	shader = new Shader(vertShader, fragShader, gl);
+	if (type == "8bit") {
+		texType = gl.UNSIGNED_BYTE
+		texStorageFormat = gl.R8
+		texFormat = gl.RED
+		filter = gl.LINEAR
+		shader = new Shader(vertShader, fragShader, gl);
+	}
+	if (type == "16bit") {
+		texType = gl.UNSIGNED_SHORT
+		texStorageFormat = gl.R16UI
+		texFormat = gl.RED_INTEGER;
+		filter = gl.NEAREST
+		shader = new Shader(vertShader, fragShaderInt, gl);
+	}
+
 	shader.use();
 
 	gl.uniform1i(shader.uniforms["volume"], 0);

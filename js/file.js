@@ -33,7 +33,7 @@ function handleFile(files) {
     };
 
     reader.onload = function(data){
-      volume = new Uint8Array(data.target.result)
+      volume = data.target.result
       input.style.background = "linear-gradient(90deg, #722040 100%, #d3394c 100%)"
       label.innerHTML = f.name;
     }
