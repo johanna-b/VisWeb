@@ -23,21 +23,8 @@ function initSlice(){
 		return;
 	}
 
-	var s = document.getElementById("slices")
-	if (state.layout == "Horizontal") {
-		s.style.width = 600 + "px"
-		s.style.height = 200 + "px"
-	}
-	if (state.layout == "Vertical") {
-		s.style.width = 200 + "px"
-		s.style.height = 600 + "px"
-	}
-	if (state.layout == "Corner") {
-		s.style.width = 400 + "px"
-		s.style.height = 400 + "px"
-	}
 
-	resize(gl)
+	// resize(gl)
 
 	// Setup VAO and VBO to render the cube to run the raymarching shader
 	var vao = gl.createVertexArray();
@@ -101,8 +88,23 @@ function initSlice(){
 	var xBox = document.getElementById("x_box");
 	var yBox = document.getElementById("y_box");
 	var zBox = document.getElementById("z_box");
+	var s = document.getElementById("slices")
 
 	drawSlices = function() {
+
+
+		if (state.layout == "Horizontal") {
+			s.style.width = 1200 * state.scale + "px"
+			s.style.height = 400 * state.scale + "px"
+		}
+		if (state.layout == "Vertical") {
+			s.style.width =  400 * state.scale  + "px"
+			s.style.height = 1200 * state.scal + "px"
+		}
+		if (state.layout == "Corner") {
+			s.style.width = 800 * state.scale + "px"
+			s.style.height = 800 * state.scale + "px"
+		}
 
 		resize(gl);
 

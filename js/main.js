@@ -24,7 +24,8 @@ var state = {
 	zmax : 1,
 	// slices
 	display : true,
-	layout : "Horizontal",
+	scale : 0.5,
+	layout : "Corner",
 	xslice : 0.5,
 	yslice : 0.5,
 	zslice : 0.5
@@ -142,20 +143,24 @@ function initVis() {
 			s.style.display = "none"
 		}
 	})
+	sliceFolder.add(state, 'scale').min(0).max(1).step(0.01)
+	.onChange(function () {
+		drawSlices();
+	})
 	sliceFolder.add(state, 'layout', ["Horizontal", "Vertical", "Corner"])
 	.onChange(function (l) {
 		var s = document.getElementById("slices")
 		if (l == "Horizontal") {
-			s.style.width = 600 + "px"
-			s.style.height = 200 + "px"
+			s.style.width = 1200 * state.scale + "px"
+			s.style.height = 400 * state.scale + "px"
 		}
 		if (l == "Vertical") {
-			s.style.width = 200 + "px"
-			s.style.height = 600 + "px"
+			s.style.width =  400 * state.scale  + "px"
+			s.style.height = 1200 * state.scal + "px"
 		}
 		if (l == "Corner") {
-			s.style.width = 400 + "px"
-			s.style.height = 400 + "px"
+			s.style.width = 800 * state.scale + "px"
+			s.style.height = 800 * state.scale + "px"
 		}
 		drawSlices();
 	})
