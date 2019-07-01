@@ -99,7 +99,7 @@ function initSlice(){
 		}
 		if (state.layout == "Vertical") {
 			s.style.width =  400 * state.scale  + "px"
-			s.style.height = 1200 * state.scal + "px"
+			s.style.height = 1200 * state.scale + "px"
 		}
 		if (state.layout == "Corner") {
 			s.style.width = 800 * state.scale + "px"
