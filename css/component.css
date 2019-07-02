@@ -115,6 +115,10 @@ a:focus {
     padding: 2.25rem 1rem;
 }
 
+.under {
+    margin-top: .5em !important;
+}
+
 .dim {
     margin-top: 5px;
     max-width: 50px;
