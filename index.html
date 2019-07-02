@@ -1,59 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="libs/css/bootstrap.css">
-    <link rel="stylesheet" href="app/css/style.css">
-    <link rel="stylesheet" href="libs/css/ui.css">
-    <meta charset="UTF-8">
-    <title>VisWeb</title>
-</head>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>VolRen</title>
+		<meta name="description" content="lighteight web-based volumetric data explorer" />
+		<meta name="keywords" content="cutom file input, styling, label, cross-browser, accessible, input type file, web-based, webgl, volume rendering" />
+		<!-- need the vcg icon -->
+		<link rel="shortcut icon" href="favicon.ico">
+		<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="css/component.css" />
+
+		<!--[if IE]>
+  		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<!-- remove this if you use Modernizr -->
+		<script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+	</head>
+	<body id="body">
+
+		<!-- file loading interface -->
+		<div id="first" class="container">
+			<header class="codrops-header">
+				<h1>VolRen</h1>
+				<p>A lighteight web-based volumetric data explorer</p>
+			</header>
+			<div class="content">
+
+				<div class="box target" id="drop_zone">
+					<input type="file" name="file-1[]" id="file-1" class="inputfile inputfile-1" data-multiple-caption="{count} files selected"/>
+					<label id="input" for="file-1"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewBox="0 0 20 17"><path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z"/></svg> <span id="label">Choose a file&hellip;</span></label>
+					<br>
+					<span>(or drop one here)</span>
+
+				</div>
+
+				<div class="box slimbox">
+					<label for="x">Dimensions of the volume  X: </label>
+					<input class="dim" id="x" type="number" name="test_name" min="0" step="1" oninput="validity.valid||(value='');">
+					<label for="y">Y: </label>
+					<input class="dim" id="y" type="number" name="test_name" min="0" step="1" oninput="validity.valid||(value='');">
+					<label for="z">Z: </label>
+					<input class="dim" id="z" type="number" name="test_name" min="0" step="1" oninput="validity.valid||(value='');">
+					<label for="type"> Datatype: </label>
+					<select id="type">
+						<option value="8bit" selected="">8 bit</option>
+  						<option value="16bit">16 bit</option>
+					</select>
+				</div>
+
+				<div class="submit" id="submit"> Visualize</div>
+
+			</div>
+		</div><!-- /container -->
+
+		<script type="text/javascript" src="js/file.js"></script>
 
 
-<body>
-
-<div id="container">
-
-    <!-- right: 2D vis area. for layouting reasons first element in html -->
-    <div id="sliceview_ui">
-        <div id="div_vis2D"></div>
-    </div>
-
-    <!-- UI on left -->
-    <div id="sidebar_ui">
-        <div id="div_ui_menu"></div>
-    </div>
-
-    <!-- 3D vis area -->
-    <div id="volview_ui">
-        <div id="div_vis3D"></div>
-    </div>
-
-    <!--<div id="TF_ui">-->
-        <!--<div id="div_TF_editor"></div>-->
-    <!--</div>-->
-
-</div>
-
-<!-- third party scripts -->
-<script src="libs/js/dat.gui.min.js"></script>
-<script src="libs/js/jquery.min.js"></script>
-<script src="libs/js/popper.min.js"></script>
-<script src="libs/js/bootstrap.min.js"></script>
-<script src="libs/js/three_mod/three.js"></script>
-<script src="libs/js/three_mod/controls/TrackballControls.js"></script>
-<script src="libs/js/three_mod/controls/OrbitControls.js"></script>
-<script src="libs/js/stats.min.js"></script>
-<script src="libs/js/TF_panel.js"></script>
-<script src="libs/js/CP_widget.js"></script>
-<script src="libs/js/ui.js"></script>
-
-<!-- our scripts -->
-<script src="app/js/ui.js"></script>
-<script src="app/js/slice_viewer.js"></script>
-<script src="app/js/volume_viewer.js"></script>
-<script src="app/js/trackball_object.js"></script>
-<script src="app/js/main.js"></script>
+		<!-- renderer -->
+		<div id="second" style="display: none;">
+			<canvas id="glcanvas"></canvas>
+			<div id="slices" class="slices">
+				<div id="x_box"></div>
+				<div id="y_box"></div>
+				<div id="z_box"></div>
+				<canvas id="slcanvas" class="over_canvas">
+			</div>
+			</canvas>
+		</div>
 
 
-</body>
+	<script type="text/javascript" src="js/dat.gui.js"></script>
+	<script src="js/gl-matrix-min.js"></script>
+	<script src="js/webgl-util.js"></script>
+	<script src="js/shader-srcs.js"></script>
+	<script src="js/FileSaver.js"></script>
+	<script type="text/javascript" src="js/helpers.js"></script>
+	<script src="js/volume-raycaster.js"></script>
+	<script type="text/javascript" src="js/slices.js"></script>
+	<script type="text/javascript" src="js/main.js"></script>
+		
+
+	</body>
 </html>
