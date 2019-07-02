@@ -75,6 +75,16 @@ function initSlice(){
 		volDims[0], volDims[1], volDims[2],
 		texFormat, texType, volume);
 
+	var colormap = gls.createTexture();
+	gls.activeTexture(gls.TEXTURE1);
+	gls.bindTexture(gls.TEXTURE_2D, colormap);
+	gls.texStorage2D(gls.TEXTURE_2D, 1, gls.RGBA8, 180, 1);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_MIN_FILTER, gls.LINEAR);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
+	gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
+		gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
+
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
 	var volScale = [longestAxis / volDims[0], longestAxis / volDims[1],
 		longestAxis / volDims[2]];
@@ -170,6 +180,7 @@ function initSlice(){
 
 
 		gls.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
+		gls.uniform1i(shader.uniforms["use_colormap"], state.useColor)
 
 
 		//draw the x slice
@@ -217,16 +228,6 @@ function initSlice(){
 
 		gls.disable(gls.SCISSOR_TEST)
 	}
-
-	var colormap = gls.createTexture();
-	gls.activeTexture(gls.TEXTURE1);
-	gls.bindTexture(gls.TEXTURE_2D, colormap);
-	gls.texStorage2D(gls.TEXTURE_2D, 1, gls.RGBA8, 180, 1);
-	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_MIN_FILTER, gls.LINEAR);
-	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
-	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
-	gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
-		gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
 
 	drawSlices();
 }

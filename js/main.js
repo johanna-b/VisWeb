@@ -24,6 +24,7 @@ var state = {
 	zmax : 1,
 	// slices
 	display : true,
+	useColor : false,
 	scale : 0.5,
 	layout : "Corner",
 	xslice : 0.5,
@@ -45,6 +46,7 @@ var colormaps = {
 };
 
 var type = null;
+var volDims = null;
 
 function initVis() {
 
@@ -102,6 +104,10 @@ function initVis() {
 			gl.activeTexture(gl.TEXTURE1);
 			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
 				gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
+			gls.activeTexture(gls.TEXTURE1);
+			gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
+				gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
+			drawSlices();
 		};
 		colormapImage.src = colormaps[newValue];
 	})
@@ -112,32 +118,32 @@ function initVis() {
 	.name("Load Volume")
 
 	var clipFolder = gui.addFolder("Clipping Planes")
-	clipFolder.add(state, 'xmin').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'xmin').min(0).max(1).step(0.01).name("X min")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
 		allowSlow = true;
 	})
-	clipFolder.add(state, 'xmax').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'xmax').min(0).max(1).step(0.01).name("X max")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
 	})
-	clipFolder.add(state, 'ymin').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'ymin').min(0).max(1).step(0.01).name("Y min")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
 		allowSlow = true;
 	})
-	clipFolder.add(state, 'ymax').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'ymax').min(0).max(1).step(0.01).name("Y max")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
 	})
-	clipFolder.add(state, 'zmin').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'zmin').min(0).max(1).step(0.01).name("Z min")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_min"], [state.xmin, state.ymin, state.zmin]);
 		allowSlow = true;
 	})
-	clipFolder.add(state, 'zmax').min(0).max(1).step(0.01)
+	clipFolder.add(state, 'zmax').min(0).max(1).step(0.01).name("Z max")
 	.onChange(function () {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
@@ -145,7 +151,7 @@ function initVis() {
 	clipFolder.open()
 
 	var sliceFolder = gui.addFolder("Slices")
-	sliceFolder.add(state, 'display')
+	sliceFolder.add(state, 'display').name("Display")
 	.onChange(function (b) {
 		var s = document.getElementById("slices")
 		if (b) {
@@ -155,11 +161,15 @@ function initVis() {
 			s.style.display = "none"
 		}
 	})
-	sliceFolder.add(state, 'scale').min(0).max(1).step(0.01)
+	sliceFolder.add(state, 'useColor').name("Use Transfer")
 	.onChange(function () {
 		drawSlices();
 	})
-	sliceFolder.add(state, 'layout', ["Horizontal", "Vertical", "Corner"])
+	sliceFolder.add(state, 'scale').min(0).max(1).step(0.01).name("Scale")
+	.onChange(function () {
+		drawSlices();
+	})
+	sliceFolder.add(state, 'layout', ["Horizontal", "Vertical", "Corner"]).name("Layout")
 	.onChange(function (l) {
 		var s = document.getElementById("slices")
 		if (l == "Horizontal") {
@@ -177,15 +187,15 @@ function initVis() {
 		drawSlices();
 	})
 	.listen()
-	sliceFolder.add(state, 'xslice').min(0).max(1).step(0.01)
+	sliceFolder.add(state, 'xslice').min(0).max(1).step(0.01).name("X slice")
 	.onChange(function () {
 		drawSlices();
 	})
-	sliceFolder.add(state, 'yslice').min(0).max(1).step(0.01)
+	sliceFolder.add(state, 'yslice').min(0).max(1).step(0.01).name("Y slice")
 	.onChange(function () {
 		drawSlices();
 	})
-	sliceFolder.add(state, 'zslice').min(0).max(1).step(0.01)
+	sliceFolder.add(state, 'zslice').min(0).max(1).step(0.01).name("Z slice")
 	.onChange(function () {
 		drawSlices();
 	})

@@ -5,8 +5,9 @@ var gl = null;
 var shader = null;
 
 
-var volDims = null;
-var cubeStrip = null;
+var proj = null;
+var camera = null;
+var projView = null;
 
 function initVol(){
 
@@ -14,10 +15,6 @@ function initVol(){
 	const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
 	const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
 
-	var colormapTex = null;
-	var proj = null;
-	var camera = null;
-	var projView = null;
 	var tabFocused = true;
 	var allowSlow = true;
 	var targetFrameTime = 32;
@@ -30,6 +27,8 @@ function initVol(){
 	var texStorageFormat = null;
 	var filter = null;
 	var texType = null;
+
+	var cubeStrip = null;
 
 
 	var canvas = document.getElementById("glcanvas");
