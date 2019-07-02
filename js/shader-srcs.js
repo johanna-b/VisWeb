@@ -188,6 +188,7 @@ var boxFragShader =
 ` #version 300 es
   precision highp float;
   uniform highp sampler3D volume;
+  uniform highp sampler2D colormap;
   uniform ivec2 comp;
   in vec3 samp;
   out vec4 color;
@@ -211,6 +212,7 @@ var boxFragShader =
 ` #version 300 es
   precision highp float;
   uniform highp usampler3D volume;
+  uniform highp sampler2D colormap;
   uniform ivec2 comp;
   in vec3 samp;
   out vec4 color;

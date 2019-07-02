@@ -1,14 +1,10 @@
 
 
 var drawSlices = null
+var gls = null;
 
 function initSlice(){
 
-
-	var takeScreenShot = false;
-	var canvas = null;
-
-	var gl = null;
 	var shader = null;
 
 	var texFormat = null;
@@ -16,22 +12,20 @@ function initSlice(){
 	var filter = null;
 	var texType = null;
 
-	canvas = document.getElementById("slcanvas");
-	gl = canvas.getContext("webgl2");
-	if (!gl) {
+	var canvas = document.getElementById("slcanvas");
+	gls = canvas.getContext("webgl2");
+	if (!gls) {
 		alert("Unable to initialize WebGL2. Your browser may not support it");
 		return;
 	}
 
 
-	// resize(gl)
-
 	// Setup VAO and VBO to render the cube to run the raymarching shader
-	var vao = gl.createVertexArray();
-	gl.bindVertexArray(vao);
+	var vao = gls.createVertexArray();
+	gls.bindVertexArray(vao);
 
-	var vbo = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+	var vbo = gls.createBuffer();
+	gls.bindBuffer(gls.ARRAY_BUFFER, vbo);
 	var cubeStrip = [
   	-1.0, -1.0,
   	-1.0, 1.0,
@@ -40,50 +34,51 @@ function initSlice(){
 	]
 
 
-	gl.enable(gl.BLEND);
-	// gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA); // use for white background
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // new for black background
+	gls.enable(gls.BLEND);
+	// gls.blendFunc(gls.ONE, gls.ONE_MINUS_SRC_ALPHA); // use for white background
+	gls.blendFunc(gls.SRC_ALPHA, gls.ONE); // new for black background
 
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeStrip), gl.STATIC_DRAW);
+	gls.bufferData(gls.ARRAY_BUFFER, new Float32Array(cubeStrip), gls.STATIC_DRAW);
 
-	gl.enableVertexAttribArray(0);
-	gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+	gls.enableVertexAttribArray(0);
+	gls.vertexAttribPointer(0, 2, gls.FLOAT, false, 0, 0);
 
 	if (type == "8bit") {
-		texType = gl.UNSIGNED_BYTE
-		texStorageFormat = gl.R8
-		texFormat = gl.RED
-		filter = gl.LINEAR
-		shader = new Shader(boxVertShader, boxFragShader, gl);
+		texType = gls.UNSIGNED_BYTE
+		texStorageFormat = gls.R8
+		texFormat = gls.RED
+		filter = gls.LINEAR
+		shader = new Shader(boxVertShader, boxFragShader, gls);
 	}
 	if (type == "16bit") {
-		texType = gl.UNSIGNED_SHORT
-		texStorageFormat = gl.R16UI
-		texFormat = gl.RED_INTEGER;
-		filter = gl.NEAREST
-		shader = new Shader(boxVertShader, boxFragShaderInt, gl);
+		texType = gls.UNSIGNED_SHORT
+		texStorageFormat = gls.R16UI
+		texFormat = gls.RED_INTEGER;
+		filter = gls.NEAREST
+		shader = new Shader(boxVertShader, boxFragShaderInt, gls);
 	}
 
 	shader.use();
-	gl.uniform1i(shader.uniforms["volume"], 0);
+	gls.uniform1i(shader.uniforms["volume"], 0);
+	gls.uniform1i(shader.uniforms["colormap"], 1);
 
-	var tex = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_3D, tex);
-	gl.texStorage3D(gl.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter); //just in case
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
+	var tex = gls.createTexture();
+	gls.activeTexture(gls.TEXTURE0);
+	gls.bindTexture(gls.TEXTURE_3D, tex);
+	gls.texStorage3D(gls.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
+	gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MIN_FILTER, filter);
+	gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MAG_FILTER, filter); //just in case
+	gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
+	gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
+	gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_T, gls.CLAMP_TO_EDGE);
+	gls.texSubImage3D(gls.TEXTURE_3D, 0, 0, 0, 0,
 		volDims[0], volDims[1], volDims[2],
 		texFormat, texType, volume);
 
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
 	var volScale = [longestAxis / volDims[0], longestAxis / volDims[1],
 		longestAxis / volDims[2]];
-	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
+	gls.uniform3fv(shader.uniforms["volume_scale"], volScale);
 	
 	var xBox = document.getElementById("x_box");
 	var yBox = document.getElementById("y_box");
@@ -106,7 +101,7 @@ function initSlice(){
 			s.style.height = 800 * state.scale + "px"
 		}
 
-		resize(gl);
+		resize(gls);
 
 		var h = canvas.clientHeight;
 		var w = canvas.clientWidth
@@ -174,55 +169,64 @@ function initSlice(){
 		}
 
 
-		gl.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
+		gls.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
 
 
 		//draw the x slice
-		gl.enable(gl.SCISSOR_TEST)
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		gl.scissor(toGLPixels(xBox.offsetLeft), toGLPixels(h - xBox.offsetTop - xBox.offsetHeight),
+		gls.enable(gls.SCISSOR_TEST)
+		gls.clearColor(0.0, 0.0, 0.0, 1.0);
+		gls.scissor(toGLPixels(xBox.offsetLeft), toGLPixels(h - xBox.offsetTop - xBox.offsetHeight),
 				toGLPixels(xBox.offsetWidth), toGLPixels(xBox.offsetHeight));
-		gl.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shader.uniforms["comp"], 
 			[toGLPixels(xBox.offsetLeft + xBox.offsetWidth * state.yslice), 
 			 toGLPixels(h - xBox.offsetTop - xBox.offsetHeight + xBox.offsetHeight * state.zslice)]);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mx)
-		gl.uniform1i(shader.uniforms["axis"], 1)
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
+		gls.clear(gls.COLOR_BUFFER_BIT);
+		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mx)
+		gls.uniform1i(shader.uniforms["axis"], 1)
+		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
-		gl.finish();
+		gls.finish();
 
 		
 
 		// draw the y slice
-		gl.scissor(toGLPixels(yBox.offsetLeft), toGLPixels(h - yBox.offsetTop - yBox.offsetHeight),
+		gls.scissor(toGLPixels(yBox.offsetLeft), toGLPixels(h - yBox.offsetTop - yBox.offsetHeight),
 				toGLPixels(yBox.offsetWidth), toGLPixels(yBox.offsetHeight));
-		gl.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shader.uniforms["comp"], 
 			[toGLPixels(yBox.offsetLeft + yBox.offsetWidth * state.xslice),
 			 toGLPixels(h - yBox.offsetTop - yBox.offsetHeight + yBox.offsetHeight * state.zslice)]);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, my)
-		gl.uniform1i(shader.uniforms["axis"], 2)
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
+		gls.clear(gls.COLOR_BUFFER_BIT);
+		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, my)
+		gls.uniform1i(shader.uniforms["axis"], 2)
+		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
-		gl.finish();
+		gls.finish();
 
 		// draw the z slice
-		gl.scissor(toGLPixels(zBox.offsetLeft), toGLPixels(h - zBox.offsetTop - zBox.offsetHeight),
+		gls.scissor(toGLPixels(zBox.offsetLeft), toGLPixels(h - zBox.offsetTop - zBox.offsetHeight),
 				toGLPixels(zBox.offsetWidth), toGLPixels(zBox.offsetHeight));
-		gl.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shader.uniforms["comp"], 
 			[toGLPixels(zBox.offsetLeft + zBox.offsetWidth * state.xslice),
 			 toGLPixels(h - zBox.offsetTop - zBox.offsetHeight + zBox.offsetHeight * state.yslice)]);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-		gl.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mz)
-		gl.uniform1i(shader.uniforms["axis"], 3)
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
+		gls.clear(gls.COLOR_BUFFER_BIT);
+		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mz)
+		gls.uniform1i(shader.uniforms["axis"], 3)
+		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
-		gl.finish();
+		gls.finish();
 
-		gl.disable(gl.SCISSOR_TEST)
-		}
+		gls.disable(gls.SCISSOR_TEST)
+	}
+
+	var colormap = gls.createTexture();
+	gls.activeTexture(gls.TEXTURE1);
+	gls.bindTexture(gls.TEXTURE_2D, colormap);
+	gls.texStorage2D(gls.TEXTURE_2D, 1, gls.RGBA8, 180, 1);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_MIN_FILTER, gls.LINEAR);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
+	gls.texParameteri(gls.TEXTURE_2D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
+	gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
+		gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
 
 	drawSlices();
-
 }

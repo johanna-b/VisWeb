@@ -34,6 +34,18 @@ var state = {
 
 var initialState = Object.assign({},state)
 
+var colormapImage = null;
+var colormaps = {
+	"Cool Warm": "colormaps/cool-warm-paraview.png",
+	"Matplotlib Plasma": "colormaps/matplotlib-plasma.png",
+	"Matplotlib Virdis": "colormaps/matplotlib-virdis.png",
+	"Rainbow": "colormaps/rainbow.png",
+	"Samsel Linear Green": "colormaps/samsel-linear-green.png",
+	"Samsel Linear YGB 1211G": "colormaps/samsel-linear-ygb-1211g.png",
+};
+
+var type = null;
+
 function initVis() {
 
 	// make sure we have all the data we need
@@ -179,8 +191,13 @@ function initVis() {
 	})
 	sliceFolder.open()
 
-	initVol()
-	initSlice()
+	colormapImage = new Image();
+	colormapImage.onload = function() {
+		initVol()
+		initSlice()
+	};
+	colormapImage.src = colormaps[state.transfer];
+
 }
 
 

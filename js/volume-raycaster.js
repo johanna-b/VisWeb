@@ -1,119 +1,38 @@
 
 
 var takeScreenShot = false;
-var canvas = null;
-
 var gl = null;
 var shader = null;
-var colormapTex = null;
-var proj = null;
-var camera = null;
-var projView = null;
-var tabFocused = true;
-var allowSlow = true;
-var targetFrameTime = 32;
-var initSamplingRate = 1.0
-var samplingRate = 1.0; //1.0
-var WIDTH = null;
-var HEIGHT = null;
+
 
 var volDims = null;
-var type = null;
 var cubeStrip = null;
-
-var texFormat = null;
-var texStorageFormat = null;
-var filter = null;
-var texType = null;
-
-const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); 
-const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
-const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
-
-var colormaps = {
-	"Cool Warm": "colormaps/cool-warm-paraview.png",
-	"Matplotlib Plasma": "colormaps/matplotlib-plasma.png",
-	"Matplotlib Virdis": "colormaps/matplotlib-virdis.png",
-	"Rainbow": "colormaps/rainbow.png",
-	"Samsel Linear Green": "colormaps/samsel-linear-green.png",
-	"Samsel Linear YGB 1211G": "colormaps/samsel-linear-ygb-1211g.png",
-};
-
-
-var drawVol = function() {
-
-	var tex = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_3D, tex);
-	gl.texStorage3D(gl.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
-		volDims[0], volDims[1], volDims[2],
-		texFormat, texType, volume);
-
-	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
-	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
-		volDims[2] / longestAxis];
-
-	gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
-	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
-
-	allowSlow = true;
-
-	setInterval(function() {
-		// Save them some battery if they're not viewing the tab
-		if (document.hidden) {
-			return;
-		}
-		var startTime = new Date();
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
-
-		
-		projView = mat4.mul(projView, proj, camera.camera);
-		gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
-
-		var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
-		gl.uniform3fv(shader.uniforms["eye_pos"], eye);
-
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
-		// Wait for rendering to actually finish
-		gl.finish();
-		var endTime = new Date();
-		var renderTime = endTime - startTime;
-		var targetSamplingRate = renderTime / targetFrameTime;
-
-		if (takeScreenShot) {
-			takeScreenShot = false;
-			canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
-		}
-
-		// If we're dropping frames, decrease the sampling rate
-		if (!allowSlow && targetSamplingRate > samplingRate) {
-			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
-			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
-		}
-
-		allowSlow = false;
-		startTime = endTime;
-		}, targetFrameTime);
-} 
-
-window.onresize = function () {
-	resize(gl)
-	WIDTH = canvas.offsetWidth;
-	HEIGHT = canvas.offsetHeight;	
-	proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0, WIDTH / HEIGHT, 0.1, 100);
-	allowSlow = true
-}
 
 function initVol(){
 
-	canvas = document.getElementById("glcanvas");
+	const defaultEye = vec3.set(vec3.create(), 0.5, 0.5, 2.0); 
+	const center = vec3.set(vec3.create(), 0.5, 0.5, 0.5);
+	const up = vec3.set(vec3.create(), 0.0, 1.0, 0.0);
+
+	var colormapTex = null;
+	var proj = null;
+	var camera = null;
+	var projView = null;
+	var tabFocused = true;
+	var allowSlow = true;
+	var targetFrameTime = 32;
+	var initSamplingRate = 1.0
+	var samplingRate = 1.0;
+	var WIDTH = null;
+	var HEIGHT = null;
+
+	var texFormat = null;
+	var texStorageFormat = null;
+	var filter = null;
+	var texType = null;
+
+
+	var canvas = document.getElementById("glcanvas");
 	gl = canvas.getContext("webgl2");
 	if (!gl) {
 		alert("Unable to initialize WebGL2. Your browser may not support it");
@@ -197,23 +116,84 @@ function initVol(){
 	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
 
-	// Load the default colormap and upload it, after which we
-	// load the volume.
-	var colormapImage = new Image();
-	colormapImage.onload = function() {
-		var colormap = gl.createTexture();
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, colormap);
-		gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 180, 1);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
-			gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
 
-		drawVol();
-	};
-	colormapImage.src = colormaps[state.transfer];
+	var colormap = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE1);
+	gl.bindTexture(gl.TEXTURE_2D, colormap);
+	gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, 180, 1);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
+		gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
+
+	var tex = gl.createTexture();
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_3D, tex);
+	gl.texStorage3D(gl.TEXTURE_3D, 1, texStorageFormat, volDims[0], volDims[1], volDims[2]);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, filter);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
+		volDims[0], volDims[1], volDims[2],
+		texFormat, texType, volume);
+
+	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
+	var volScale = [volDims[0] / longestAxis, volDims[1] / longestAxis,
+		volDims[2] / longestAxis];
+
+	gl.uniform3iv(shader.uniforms["volume_dims"], volDims);
+	gl.uniform3fv(shader.uniforms["volume_scale"], volScale);
+
+	allowSlow = true;
+
+	setInterval(function() {
+		// Save them some battery if they're not viewing the tab
+		if (document.hidden) {
+			return;
+		}
+		var startTime = new Date();
+		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+
+		
+		projView = mat4.mul(projView, proj, camera.camera);
+		gl.uniformMatrix4fv(shader.uniforms["proj_view"], false, projView);
+
+		var eye = [camera.invCamera[12], camera.invCamera[13], camera.invCamera[14]];
+		gl.uniform3fv(shader.uniforms["eye_pos"], eye);
+
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubeStrip.length / 3);
+		// Wait for rendering to actually finish
+		gl.finish();
+		var endTime = new Date();
+		var renderTime = endTime - startTime;
+		var targetSamplingRate = renderTime / targetFrameTime;
+
+		if (takeScreenShot) {
+			takeScreenShot = false;
+			canvas.toBlob(function(b) { saveAs(b, "screen.png"); }, "image/png");
+		}
+
+		// If we're dropping frames, decrease the sampling rate
+		if (!allowSlow && targetSamplingRate > samplingRate) {
+			samplingRate = 0.8 * samplingRate + 0.2 * targetSamplingRate;
+			gl.uniform1f(shader.uniforms["dt_scale"], samplingRate);
+		}
+
+		allowSlow = false;
+		startTime = endTime;
+		}, targetFrameTime);
+
+	window.onresize = function () {
+		resize(gl)
+		WIDTH = canvas.offsetWidth;
+		HEIGHT = canvas.offsetHeight;	
+		proj = mat4.perspective(mat4.create(), 60 * Math.PI / 180.0, WIDTH / HEIGHT, 0.1, 100);
+		allowSlow = true
+	}
 }
 
 
