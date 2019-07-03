@@ -85,8 +85,22 @@ function initVis() {
 	if (type == "8bit") {
 		volume = new Uint8Array(volume)
 	}
-	if (type == "16bit") {
+	else if (type == "16bit") {
 		volume = new Uint16Array(volume)
+	}
+	else if (type == "16bitf") {
+		volume = new Uint16Array(volume)
+		volume = Float32Array.from(volume, function (x) {
+			return x / 65536.0;
+		})
+		type = "float"
+	}
+	else if (type == "float") {
+		volume = new Float32Array(volume)
+	}
+
+	if (segmentation) {
+		segmentation = new Uint8Array(segmentation)
 	}
 
 	volDims = [x,y,z]

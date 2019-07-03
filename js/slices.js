@@ -57,6 +57,15 @@ function initSlice(){
 		filter = gls.NEAREST
 		shader = new Shader(boxVertShader, boxFragShaderInt, gls);
 	}
+	if (type == "float") {
+		gls.getExtension('OES_texture_float');
+		gls.getExtension('OES_texture_float_linear');
+		texType = gls.FLOAT
+		texStorageFormat = gls.R32F
+		texFormat = gls.RED;
+		filter = gls.LINEAR
+		shader = new Shader(boxVertShader, boxFragShader, gls);
+	}
 
 	shader.use();
 	gls.uniform1i(shader.uniforms["volume"], 0);

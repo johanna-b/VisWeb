@@ -97,6 +97,15 @@ function initVol(){
 		filter = gl.NEAREST
 		shader = new Shader(vertShader, fragShaderInt, gl);
 	}
+	if (type == "float") {
+		gl.getExtension('OES_texture_float');
+		gl.getExtension('OES_texture_float_linear');
+		texType = gl.FLOAT
+		texStorageFormat = gl.R32F
+		texFormat = gl.RED;
+		filter = gl.LINEAR
+		shader = new Shader(vertShader, fragShader, gl);
+	}
 
 	shader.use();
 
