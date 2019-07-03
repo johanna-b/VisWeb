@@ -3,7 +3,7 @@
 var volume = null;
 var segmentation = null;
 
-function handleFile(files, label, input) {
+function handleFile(files, label, input, mode) {
     
   f = files[0];
   if (!f) {
@@ -29,11 +29,21 @@ function handleFile(files, label, input) {
   reader.onerror = function(evt) {
     label.innerHTML = "Error"
     input.style.background = "#d3394c"
-    volume = null
+    if (mode == "vol") {
+      volume = null
+    }
+    if (mode == "seg") {
+      segmentation = null
+    }
   };
 
   reader.onload = function(data){
-    volume = data.target.result
+    if (mode == "vol") {
+      volume = data.target.result
+    }
+    if (mode == "seg") {
+      segmentation = data.target.result
+    }
     input.style.background = "linear-gradient(90deg, #722040 100%, #d3394c 100%)"
     label.innerHTML = f.name;
   }
@@ -47,7 +57,7 @@ var inn = document.getElementById('file-1');
 inn.addEventListener('change', function (evt) {
   var label = document.getElementById("label");
   var input = document.getElementById("input");
-  handleFile(evt.target.files, label, input)
+  handleFile(evt.target.files, label, input, "vol")
 }, false);
 
 
@@ -66,7 +76,7 @@ drop.addEventListener('drop', function (evt) {
   var label = document.getElementById("label");
   var input = document.getElementById("input");
 
-  handleFile(evt.dataTransfer.files, label, input); // FileList object.
+  handleFile(evt.dataTransfer.files, label, input, "vol"); // FileList object.
 }, false);
 var volInout = 0
 drop.addEventListener('dragenter', function (evt) {
@@ -84,10 +94,9 @@ drop.addEventListener('dragleave', function (evt) {
 
 var inn2 = document.getElementById('file-2');
 inn2.addEventListener('change', function (evt) {
-  alert("foo")
-  // var label = document.getElementById("label2");
-  // var input = document.getElementById("input2");
-  // handleFile(evt.target.files, label, input)
+  var label = document.getElementById("label2");
+  var input = document.getElementById("input2");
+  handleFile(evt.target.files, label, input, "seg")
 }, false);
 
 
@@ -106,7 +115,7 @@ drop2.addEventListener('drop', function (evt) {
   var label = document.getElementById("label2");
   var input = document.getElementById("input2");
 
-  handleFile(evt.dataTransfer.files, label, input); // FileList object.
+  handleFile(evt.dataTransfer.files, label, input, "seg"); // FileList object.
 }, false);
 var segInout = 0
 drop2.addEventListener('dragenter', function (evt) {
@@ -124,7 +133,12 @@ drop2.addEventListener('dragleave', function (evt) {
 
 function reset() {
   var input = document.getElementById("input");
+  var label = document.getElementById("label")
   label.innerHTML = "Choose a file&hellip;"
   input.style.background = "#d3394c"
+  var input2 = document.getElementById("input2");
+  var label2 = document.getElementById("label2")
+  label2.innerHTML = "Add segmentation"
+  input2.style.background = "#d3394c"
   volume = null
 }
