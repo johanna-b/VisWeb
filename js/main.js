@@ -90,17 +90,11 @@ function initVis() {
 	}
 	else if (type == "16bitf") {
 		volume = new Uint16Array(volume)
-		volume = Float32Array.from(volume, function (x) {
-			return x / 65536.0;
-		})
+		volume = Float32Array.from(volume, x => x / 65536.0)
 		type = "float"
 	}
 	else if (type == "float") {
 		volume = new Float32Array(volume)
-	}
-
-	if (segmentation) {
-		segmentation = new Uint8Array(segmentation)
 	}
 
 	volDims = [x,y,z]
@@ -214,6 +208,25 @@ function initVis() {
 		drawSlices();
 	})
 	sliceFolder.open()
+
+
+	if (segmentation) {
+		segmentation = new Uint8Array(segmentation)
+		var ids = unique(segmentation)
+		var segFolder = gui.addFolder("Segmentation")
+		state.useSegmentation = true;
+		segFolder.add(state, "useSegmentation").name("Use Segmentation")
+		ids.forEach(function (id) {
+			state[id] = {
+				display : true,
+				color : "#739348"
+			}
+			var idFolder = segFolder.addFolder(""+id)
+			idFolder.add(state[id], "display").name("Display")
+			idFolder.addColor(state[id], "color").name("Color")
+		})
+		console.log(state)
+	}
 
 	colormapImage = new Image();
 	colormapImage.onload = function() {
