@@ -47,6 +47,6 @@ function unique(a) {
 
 Math.seedrandom('any string you like');
 function randColor() {
-	return "#"+Math.floor(Math.random()*16777215).toString(16);
+	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
 console.log(randColor())

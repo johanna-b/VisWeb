@@ -156,7 +156,7 @@ function initVis() {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
 	})
-	clipFolder.open()
+	// clipFolder.open()
 
 	var sliceFolder = gui.addFolder("Slices")
 	sliceFolder.add(state, 'display').name("Display")
@@ -207,10 +207,12 @@ function initVis() {
 	.onChange(function () {
 		drawSlices();
 	})
-	sliceFolder.open()
+	// sliceFolder.open()
 
 
 	if (segmentation) {
+		// This is for a max of 50 id's
+		// TODO make random for without controls for larger numbers
 		segmentation = new Uint8Array(segmentation)
 		var ids = unique(segmentation)
 		var segFolder = gui.addFolder("Segmentation")
@@ -219,7 +221,7 @@ function initVis() {
 		ids.forEach(function (id) {
 			state[id] = {
 				display : true,
-				color : "#739348"
+				color : randColor()
 			}
 			var idFolder = segFolder.addFolder(""+id)
 			idFolder.add(state[id], "display").name("Display")
