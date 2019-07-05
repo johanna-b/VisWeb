@@ -88,7 +88,6 @@ function initVol(){
 		texStorageFormat = gl.R8
 		texFormat = gl.RED
 		filter = gl.LINEAR
-		shader = new Shader(vertShader, fragShader, gl);
 	}
 	if (type == "16bit") {
 		texType = gl.UNSIGNED_SHORT
@@ -104,8 +103,16 @@ function initVol(){
 		texStorageFormat = gl.R32F
 		texFormat = gl.RED;
 		filter = gl.LINEAR
+	}
+
+	if ((type == "8bit" || type == "float") && !segmentation) {
 		shader = new Shader(vertShader, fragShader, gl);
 	}
+	// if ((type == "8bit" || type == "float") && segmentation) {
+	// 	shader = new Shader(vertShader,fragShaderSeg)
+	// 	gl.uniform1i(shader.uniforms["use_seg", state.useSegmentation])
+	// 	var colorList
+	// }
 
 	shader.use();
 

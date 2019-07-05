@@ -211,13 +211,16 @@ function initVis() {
 
 
 	if (segmentation) {
-		// This is for a max of 50 id's
+		// This is for a max of 25 id's
 		// TODO make random for without controls for larger numbers
 		segmentation = new Uint8Array(segmentation)
 		var ids = unique(segmentation)
 		var segFolder = gui.addFolder("Segmentation")
 		state.useSegmentation = true;
 		segFolder.add(state, "useSegmentation").name("Use Segmentation")
+		.onChange(function () {
+			shader.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
+		})
 		ids.forEach(function (id) {
 			state[id] = {
 				display : true,
