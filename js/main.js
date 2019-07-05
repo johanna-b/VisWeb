@@ -47,6 +47,7 @@ var colormaps = {
 
 var type = null;
 var volDims = null;
+var ids = null;
 
 function initVis() {
 
@@ -214,12 +215,12 @@ function initVis() {
 		// This is for a max of 25 id's
 		// TODO make random for without controls for larger numbers
 		segmentation = new Uint8Array(segmentation)
-		var ids = unique(segmentation)
+		ids = unique(segmentation)
 		var segFolder = gui.addFolder("Segmentation")
 		state.useSegmentation = true;
 		segFolder.add(state, "useSegmentation").name("Use Segmentation")
 		.onChange(function () {
-			shader.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
+			gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
 		})
 		ids.forEach(function (id) {
 			state[id] = {

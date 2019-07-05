@@ -1,37 +1,11 @@
-var boxVertShader =
-` #version 300 es
-  layout(location=0) in vec3 pos;
-  out vec3 samp;
-
-  uniform vec3 slices;
-  uniform mat4 scaletrans;
-  uniform int axis;
-  uniform vec3 volume_scale;
-
-  void main() {
-    gl_Position = scaletrans * vec4(pos, 1);
-    if (axis == 1) {
-    	samp.yz = pos.xy * volume_scale.yz * 0.5 + vec2(0.5);
-    	samp.x = slices.x;
-    }
-    if (axis == 2) {
-    	samp.xz = pos.xy * volume_scale.xz * 0.5 + vec2(0.5);
-    	samp.y = slices.y;
-    }
-    if (axis == 3) {
-    	samp.xy = pos.xy * volume_scale.xy * 0.5 + vec2(0.5);
-    	samp.z = slices.z;
-    }
-  }
-`
-
-var boxFragShader = 
+var boxFragShaderSeg = 
 ` #version 300 es
   precision highp float;
   uniform highp sampler3D volume;
   uniform highp sampler2D colormap;
   uniform bool use_colormap;
   uniform ivec2 comp;
+  uniform vec3 colors[3];
   in vec3 samp;
   out vec4 color;
 
@@ -54,4 +28,7 @@ var boxFragShader =
 	if (invert && use_colormap) {
 		color = vec4(1.0,1.0,1.0, 1.0);
 	}
+  if (colors[1].y > 0.5) {
+    color = vec4(1.0,1.0,1.0, 1.0);
+  }
 }`

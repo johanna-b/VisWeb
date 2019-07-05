@@ -89,14 +89,15 @@ function initVol(){
 		texFormat = gl.RED
 		filter = gl.LINEAR
 	}
-	if (type == "16bit") {
+	else if (type == "16bit") {
 		texType = gl.UNSIGNED_SHORT
 		texStorageFormat = gl.R16UI
 		texFormat = gl.RED_INTEGER;
 		filter = gl.NEAREST
 		shader = new Shader(vertShader, fragShaderInt, gl);
+		shader.use();
 	}
-	if (type == "float") {
+	else if (type == "float") {
 		gl.getExtension('OES_texture_float');
 		gl.getExtension('OES_texture_float_linear');
 		texType = gl.FLOAT
@@ -107,14 +108,13 @@ function initVol(){
 
 	if ((type == "8bit" || type == "float") && !segmentation) {
 		shader = new Shader(vertShader, fragShader, gl);
+		shader.use();
 	}
-	// if ((type == "8bit" || type == "float") && segmentation) {
-	// 	shader = new Shader(vertShader,fragShaderSeg)
-	// 	gl.uniform1i(shader.uniforms["use_seg", state.useSegmentation])
-	// 	var colorList
-	// }
-
-	shader.use();
+	if ((type == "8bit" || type == "float") && segmentation) {
+		shader = new Shader(vertShader, fragShader, gl);
+		shader.use();
+	}
+	
 
 	gl.uniform1i(shader.uniforms["volume"], 0);
 	gl.uniform1i(shader.uniforms["colormap"], 1);

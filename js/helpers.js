@@ -49,4 +49,17 @@ Math.seedrandom('any string you like');
 function randColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }
-console.log(randColor())
+
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return [parseInt(result[1], 16) / 255,  parseInt(result[2], 16) / 255, parseInt(result[3], 16)/ 255];
+}
+
+function listColors(obj, ids) {
+	var cl = []
+	ids.forEach(function (id) {
+		cl = cl.concat(hexToRgb(obj[id]["color"]))
+	})
+	return cl;
+}
