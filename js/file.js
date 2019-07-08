@@ -141,4 +141,5 @@ function reset() {
   label2.innerHTML = "Add segmentation"
   input2.style.background = "#d3394c"
   volume = null
+  segmentation = null
 }

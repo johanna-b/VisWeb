@@ -2,15 +2,16 @@
 
 var drawSlices = null
 var gls = null;
+var shaders = null;
 
 function initSlice(){
-
-	var shaders = null;
 
 	var texFormat = null;
 	var texStorageFormat = null;
 	var filter = null;
 	var texType = null;
+
+	var cl = null
 
 	var canvas = document.getElementById("slcanvas");
 	gls = canvas.getContext("webgl2");
@@ -70,16 +71,30 @@ function initSlice(){
 		shaders = new Shader(boxVertShader, boxFragShader, gls);
 		shaders.use();
 	}
-	if ((type == "8bit" || type == "float") && segmentation) {
-		shaders = new Shader(boxVertShader, boxFragShaderSeg, gls);
+	if (segmentation) {
+		if (type == "8bit" || type == "float") {
+			shaders = new Shader(boxVertShader, boxFragShaderSeg, gls);
+		}
+		if (type == "16bit") {
+			shaders = new Shader(boxVertShader, boxFragShaderSegInt, gls)
+		}
 		shaders.use();
 		cl = gls.getUniformLocation(shaders.program, "colors")
-		gls.uniform3fv(cl, new Float32Array([
-1, 0, 0, // red
-0, 1, 0, // blue
-0, 0, 1 // green
-]))
-		console.log(gls.getUniform(shaders.program, cl))
+		
+
+		var seg = gls.createTexture();
+		gls.activeTexture(gls.TEXTURE2);
+		gls.bindTexture(gls.TEXTURE_3D, seg);
+		gls.texStorage3D(gls.TEXTURE_3D, 1, gls.R8, volDims[0], volDims[1], volDims[2]);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MIN_FILTER, gls.NEAREST);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MAG_FILTER, gls.NEAREST); //just in case
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_T, gls.CLAMP_TO_EDGE);
+		gls.texSubImage3D(gls.TEXTURE_3D, 0, 0, 0, 0,
+			volDims[0], volDims[1], volDims[2],
+			gls.RED, gls.UNSIGNED_BYTE, segmentation);
+		gls.uniform1i(shaders.uniforms["segmentation"], 2);
 	}
 
 	gls.uniform1i(shaders.uniforms["volume"], 0);
@@ -203,7 +218,14 @@ function initSlice(){
 
 
 		gls.uniform3fv(shaders.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
-		gls.uniform1i(shaders.uniforms["use_colormap"], state.useColor)
+		gls.uniform1i(shaders.uniforms["use_colormap"], state.useColor == "Transfer function")
+		gls.uniform1i(shaders.uniforms["use_seg"], state.useColor == "Segmentation")
+
+		if (segmentation) {
+			var colors = listColors(state, ids)
+			colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
+			gls.uniform3fv(cl, colors)
+		}
 
 
 		//draw the x slice

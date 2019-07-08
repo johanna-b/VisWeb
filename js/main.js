@@ -24,12 +24,20 @@ var state = {
 	zmax : 1,
 	// slices
 	display : true,
-	useColor : false,
 	scale : 0.5,
 	layout : "Corner",
 	xslice : 0.5,
 	yslice : 0.5,
-	zslice : 0.5
+	zslice : 0.5,
+	segLoad : function () {
+		document.getElementById("first").style.display = "initial";
+		document.getElementById("second").style.display = "none"
+		gui.destroy()
+		document.getElementById("body").classList.remove("bound")
+		reset()
+		state = initialState
+		initialState = Object.assign({},state)
+	}
 }
 
 
@@ -170,7 +178,8 @@ function initVis() {
 			s.style.display = "none"
 		}
 	})
-	sliceFolder.add(state, 'useColor').name("Use Transfer")
+	state.useColor = segmentation ? "Segmentation" : "Grayscale"
+	sliceFolder.add(state, 'useColor', segmentation ? ["Grayscale", "Transfer function", "Segmentation"] : ["Grayscale", "Transfer function"]).name("Format")
 	.onChange(function () {
 		drawSlices();
 	})
@@ -209,29 +218,33 @@ function initVis() {
 		drawSlices();
 	})
 	// sliceFolder.open()
+	gui.add(state, "segLoad").name("Load Mask")
 
 
 	if (segmentation) {
 		// This is for a max of 25 id's
 		// TODO make random for without controls for larger numbers
+		// TODO we can try nested folder once google fixes the DAT.gui bug
 		segmentation = new Uint8Array(segmentation)
 		ids = unique(segmentation)
-		var segFolder = gui.addFolder("Segmentation")
 		state.useSegmentation = true;
-		segFolder.add(state, "useSegmentation").name("Use Segmentation")
+		gui.add(state, "useSegmentation").name("Use Segmentation")
 		.onChange(function () {
-			gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
+			// Set the right uniform
 		})
 		ids.forEach(function (id) {
 			state[id] = {
 				display : true,
 				color : randColor()
 			}
-			var idFolder = segFolder.addFolder(""+id)
+			var idFolder = gui.addFolder(""+id)
 			idFolder.add(state[id], "display").name("Display")
 			idFolder.addColor(state[id], "color").name("Color")
+			.onChange(function (newValue) {
+				drawSlices()
+				console.log(state)
+			})
 		})
-		console.log(state)
 	}
 
 	colormapImage = new Image();
