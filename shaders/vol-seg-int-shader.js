@@ -1,9 +1,9 @@
-var fragShaderSeg =
+var fragShaderSegInt =
 `#version 300 es
 #line 24
 precision highp int;
 precision highp float;
-uniform highp sampler3D volume;
+uniform highp usampler3D volume;
 uniform highp sampler2D colormap;
 uniform ivec3 volume_dims;
 uniform float dt_scale;
@@ -68,7 +68,7 @@ void main(void) {
 	                use = displays[k];
 
 	        if (use) {
-	        	float val = texture(volume, p).r;
+	        	float val = float(texture(volume, p).r) / 65536.0;
 				vec4 val_color;
 		        for (int k = 0; k <= seg && k < 25; ++k)
 		            if (seg == k)
@@ -87,7 +87,7 @@ void main(void) {
 	}
 	else {
 		for (float t = t_hit.x; t < t_hit.y; t += dt) {
-			float val = texture(volume, p).r;
+			float val = float(texture(volume, p).r) / 65536.0;
 			vec4 val_color = vec4(texture(colormap, vec2(val, 0.5)).rgb, val);
 			// Opacity correction
 			val_color.a = 1.0 - pow(1.0 - val_color.a, dt_scale);

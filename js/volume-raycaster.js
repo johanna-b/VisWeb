@@ -4,6 +4,7 @@ var takeScreenShot = false;
 var gl = null;
 var shader = null;
 var cl = null;
+var dl = null;
 
 
 var proj = null;
@@ -116,7 +117,7 @@ function initVol(){
 			shader = new Shader(vertShader, fragShaderSeg, gl);
 		}
 		if (type == "16bit") {
-			shader = new Shader(vertShader, boxFragShaderSegInt, gl)
+			shader = new Shader(vertShader, fragShaderSegInt, gl)
 		}
 		shader.use();
 		gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
@@ -125,6 +126,11 @@ function initVol(){
 		var colors = listColors(state, ids)
 		colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
 		gl.uniform3fv(cl, colors)
+
+		dl = gl.getUniformLocation(shader.program, "displays")
+		var displays = listDisplays(state, ids)
+		displays = displays.concat(new Array(25 * 3 - displays.length).fill(false))
+		gl.uniform1iv(dl, displays)
 		
 
 		var seg = gl.createTexture();

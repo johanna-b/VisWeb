@@ -63,3 +63,11 @@ function listColors(obj, ids) {
 	})
 	return cl;
 }
+
+function listDisplays(obj, ids) {
+	var cl = []
+	ids.forEach(function (id) {
+		cl = cl.concat(obj[id]["display"])
+	})
+	return cl;
+}

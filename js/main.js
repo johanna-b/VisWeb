@@ -225,6 +225,7 @@ function initVis() {
 		// This is for a max of 25 id's
 		// TODO make random for without controls for larger numbers
 		// TODO we can try nested folder once google fixes the DAT.gui bug
+		// TODO look at DAT.gui color layout issues
 		segmentation = new Uint8Array(segmentation)
 		ids = unique(segmentation)
 		state.useSegmentation = true;
@@ -239,8 +240,13 @@ function initVis() {
 			}
 			var idFolder = gui.addFolder(""+id)
 			idFolder.add(state[id], "display").name("Display")
+			.onChange(function () {
+				var displays = listDisplays(state, ids)
+				displays = displays.concat(new Array(25 * 3 - displays.length).fill(false))
+				gl.uniform1iv(dl, displays)
+			})
 			idFolder.addColor(state[id], "color").name("Color")
-			.onChange(function (newValue) {
+			.onChange(function () {
 				var colors = listColors(state, ids)
 				colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
 				gl.uniform3fv(cl, colors)

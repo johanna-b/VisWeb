@@ -28,7 +28,7 @@ var boxFragShaderSeg =
   	}
     else if (use_seg) {
       int seg = int(255.0 * texture(segmentation, samp).r);
-      for (int k = 0; k <= seg && k < 4; ++k)
+      for (int k = 0; k <= seg && k < 25; ++k)
         if (seg == k)
             color = vec4(colors[k], 1.0);
     }
