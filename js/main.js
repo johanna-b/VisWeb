@@ -230,7 +230,7 @@ function initVis() {
 		state.useSegmentation = true;
 		gui.add(state, "useSegmentation").name("Use Segmentation")
 		.onChange(function () {
-			// Set the right uniform
+			gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
 		})
 		ids.forEach(function (id) {
 			state[id] = {
@@ -241,8 +241,10 @@ function initVis() {
 			idFolder.add(state[id], "display").name("Display")
 			idFolder.addColor(state[id], "color").name("Color")
 			.onChange(function (newValue) {
+				var colors = listColors(state, ids)
+				colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
+				gl.uniform3fv(cl, colors)
 				drawSlices()
-				console.log(state)
 			})
 		})
 	}

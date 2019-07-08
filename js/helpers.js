@@ -45,7 +45,7 @@ function unique(a) {
 	return new Uint8Array([...new Set(a)]); 
 }
 
-Math.seedrandom('any string you like');
+Math.seedrandom('the horse is');
 function randColor() {
 	return '#'+('00000'+(Math.random()*(1<<24)|0).toString(16)).slice(-6);
 }

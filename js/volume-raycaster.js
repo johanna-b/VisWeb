@@ -3,6 +3,7 @@
 var takeScreenShot = false;
 var gl = null;
 var shader = null;
+var cl = null;
 
 
 var proj = null;
@@ -110,9 +111,35 @@ function initVol(){
 		shader = new Shader(vertShader, fragShader, gl);
 		shader.use();
 	}
-	if ((type == "8bit" || type == "float") && segmentation) {
-		shader = new Shader(vertShader, fragShader, gl);
+	if (segmentation) {
+		if (type == "8bit" || type == "float") {
+			shader = new Shader(vertShader, fragShaderSeg, gl);
+		}
+		if (type == "16bit") {
+			shader = new Shader(vertShader, boxFragShaderSegInt, gl)
+		}
 		shader.use();
+		gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
+
+		cl = gl.getUniformLocation(shader.program, "colors")
+		var colors = listColors(state, ids)
+		colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
+		gl.uniform3fv(cl, colors)
+		
+
+		var seg = gl.createTexture();
+		gl.activeTexture(gl.TEXTURE2);
+		gl.bindTexture(gl.TEXTURE_3D, seg);
+		gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R8, volDims[0], volDims[1], volDims[2]);
+		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST); //just in case
+		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0,
+			volDims[0], volDims[1], volDims[2],
+			gl.RED, gl.UNSIGNED_BYTE, segmentation);
+		gl.uniform1i(shader.uniforms["segmentation"], 2);
 	}
 	
 
