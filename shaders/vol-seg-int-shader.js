@@ -87,14 +87,23 @@ void main(void) {
 	}
 	else {
 		for (float t = t_hit.x; t < t_hit.y; t += dt) {
-			float val = float(texture(volume, p).r) / 65536.0;
-			vec4 val_color = vec4(texture(colormap, vec2(val, 0.5)).rgb, val);
-			// Opacity correction
-			val_color.a = 1.0 - pow(1.0 - val_color.a, dt_scale);
-			color.rgb += (1.0 - color.a) * val_color.a * val_color.rgb;
-			color.a += (1.0 - color.a) * val_color.a;
-			if (color.a >= 0.95) {
-				break;
+
+			int seg = int(255.0 * texture(segmentation, p).r);
+			bool use = true;
+			for (int k = 0; k <= seg && k < 25; ++k)
+	            if (seg == k)
+	                use = displays[k];
+
+	        if (use) {
+				float val = float(texture(volume, p).r) / 65536.0;
+				vec4 val_color = vec4(texture(colormap, vec2(val, 0.5)).rgb, val);
+				// Opacity correction
+				val_color.a = 1.0 - pow(1.0 - val_color.a, dt_scale);
+				color.rgb += (1.0 - color.a) * val_color.a * val_color.rgb;
+				color.a += (1.0 - color.a) * val_color.a;
+				if (color.a >= 0.95) {
+					break;
+				}
 			}
 			p += ray_dir * dt;
 		}
