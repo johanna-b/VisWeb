@@ -2,15 +2,16 @@
 
 var drawSlices = null
 var gls = null;
+var shaders = null;
 
 function initSlice(){
-
-	var shader = null;
 
 	var texFormat = null;
 	var texStorageFormat = null;
 	var filter = null;
 	var texType = null;
+
+	var cl = null
 
 	var canvas = document.getElementById("slcanvas");
 	gls = canvas.getContext("webgl2");
@@ -48,19 +49,56 @@ function initSlice(){
 		texStorageFormat = gls.R8
 		texFormat = gls.RED
 		filter = gls.LINEAR
-		shader = new Shader(boxVertShader, boxFragShader, gls);
 	}
-	if (type == "16bit") {
+	else if (type == "16bit") {
 		texType = gls.UNSIGNED_SHORT
 		texStorageFormat = gls.R16UI
 		texFormat = gls.RED_INTEGER;
 		filter = gls.NEAREST
-		shader = new Shader(boxVertShader, boxFragShaderInt, gls);
+		shaders = new Shader(boxVertShader, boxFragShaderInt, gls);
+		shaders.use();
+	}
+	else if (type == "float") {
+		gls.getExtension('OES_texture_float');
+		gls.getExtension('OES_texture_float_linear');
+		texType = gls.FLOAT
+		texStorageFormat = gls.R32F
+		texFormat = gls.RED;
+		filter = gls.LINEAR
 	}
 
-	shader.use();
-	gls.uniform1i(shader.uniforms["volume"], 0);
-	gls.uniform1i(shader.uniforms["colormap"], 1);
+	if ((type == "8bit" || type == "float") && !segmentation) {
+		shaders = new Shader(boxVertShader, boxFragShader, gls);
+		shaders.use();
+	}
+	if (segmentation) {
+		if (type == "8bit" || type == "float") {
+			shaders = new Shader(boxVertShader, boxFragShaderSeg, gls);
+		}
+		if (type == "16bit") {
+			shaders = new Shader(boxVertShader, boxFragShaderSegInt, gls)
+		}
+		shaders.use();
+		cl = gls.getUniformLocation(shaders.program, "colors")
+		
+
+		var seg = gls.createTexture();
+		gls.activeTexture(gls.TEXTURE2);
+		gls.bindTexture(gls.TEXTURE_3D, seg);
+		gls.texStorage3D(gls.TEXTURE_3D, 1, gls.R8, volDims[0], volDims[1], volDims[2]);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MIN_FILTER, gls.NEAREST);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_MAG_FILTER, gls.NEAREST); //just in case
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_R, gls.CLAMP_TO_EDGE);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_S, gls.CLAMP_TO_EDGE);
+		gls.texParameteri(gls.TEXTURE_3D, gls.TEXTURE_WRAP_T, gls.CLAMP_TO_EDGE);
+		gls.texSubImage3D(gls.TEXTURE_3D, 0, 0, 0, 0,
+			volDims[0], volDims[1], volDims[2],
+			gls.RED, gls.UNSIGNED_BYTE, segmentation);
+		gls.uniform1i(shaders.uniforms["segmentation"], 2);
+	}
+
+	gls.uniform1i(shaders.uniforms["volume"], 0);
+	gls.uniform1i(shaders.uniforms["colormap"], 1);
 
 	var tex = gls.createTexture();
 	gls.activeTexture(gls.TEXTURE0);
@@ -88,7 +126,7 @@ function initSlice(){
 	var longestAxis = Math.max(volDims[0], Math.max(volDims[1], volDims[2]));
 	var volScale = [longestAxis / volDims[0], longestAxis / volDims[1],
 		longestAxis / volDims[2]];
-	gls.uniform3fv(shader.uniforms["volume_scale"], volScale);
+	gls.uniform3fv(shaders.uniforms["volume_scale"], volScale);
 	
 	var xBox = document.getElementById("x_box");
 	var yBox = document.getElementById("y_box");
@@ -179,8 +217,15 @@ function initSlice(){
 		}
 
 
-		gls.uniform3fv(shader.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
-		gls.uniform1i(shader.uniforms["use_colormap"], state.useColor)
+		gls.uniform3fv(shaders.uniforms["slices"] , [state.xslice, state.yslice, state.zslice])
+		gls.uniform1i(shaders.uniforms["use_colormap"], state.useColor == "Transfer function")
+		gls.uniform1i(shaders.uniforms["use_seg"], state.useColor == "Segmentation")
+
+		if (segmentation) {
+			var colors = listColors(state, ids)
+			colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
+			gls.uniform3fv(cl, colors)
+		}
 
 
 		//draw the x slice
@@ -188,12 +233,12 @@ function initSlice(){
 		gls.clearColor(0.0, 0.0, 0.0, 1.0);
 		gls.scissor(toGLPixels(xBox.offsetLeft), toGLPixels(h - xBox.offsetTop - xBox.offsetHeight),
 				toGLPixels(xBox.offsetWidth), toGLPixels(xBox.offsetHeight));
-		gls.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shaders.uniforms["comp"], 
 			[toGLPixels(xBox.offsetLeft + xBox.offsetWidth * state.yslice), 
 			 toGLPixels(h - xBox.offsetTop - xBox.offsetHeight + xBox.offsetHeight * state.zslice)]);
 		gls.clear(gls.COLOR_BUFFER_BIT);
-		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mx)
-		gls.uniform1i(shader.uniforms["axis"], 1)
+		gls.uniformMatrix4fv(shaders.uniforms["scaletrans"], false, mx)
+		gls.uniform1i(shaders.uniforms["axis"], 1)
 		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
 		gls.finish();
@@ -203,12 +248,12 @@ function initSlice(){
 		// draw the y slice
 		gls.scissor(toGLPixels(yBox.offsetLeft), toGLPixels(h - yBox.offsetTop - yBox.offsetHeight),
 				toGLPixels(yBox.offsetWidth), toGLPixels(yBox.offsetHeight));
-		gls.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shaders.uniforms["comp"], 
 			[toGLPixels(yBox.offsetLeft + yBox.offsetWidth * state.xslice),
 			 toGLPixels(h - yBox.offsetTop - yBox.offsetHeight + yBox.offsetHeight * state.zslice)]);
 		gls.clear(gls.COLOR_BUFFER_BIT);
-		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, my)
-		gls.uniform1i(shader.uniforms["axis"], 2)
+		gls.uniformMatrix4fv(shaders.uniforms["scaletrans"], false, my)
+		gls.uniform1i(shaders.uniforms["axis"], 2)
 		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
 		gls.finish();
@@ -216,12 +261,12 @@ function initSlice(){
 		// draw the z slice
 		gls.scissor(toGLPixels(zBox.offsetLeft), toGLPixels(h - zBox.offsetTop - zBox.offsetHeight),
 				toGLPixels(zBox.offsetWidth), toGLPixels(zBox.offsetHeight));
-		gls.uniform2iv(shader.uniforms["comp"], 
+		gls.uniform2iv(shaders.uniforms["comp"], 
 			[toGLPixels(zBox.offsetLeft + zBox.offsetWidth * state.xslice),
 			 toGLPixels(h - zBox.offsetTop - zBox.offsetHeight + zBox.offsetHeight * state.yslice)]);
 		gls.clear(gls.COLOR_BUFFER_BIT);
-		gls.uniformMatrix4fv(shader.uniforms["scaletrans"], false, mz)
-		gls.uniform1i(shader.uniforms["axis"], 3)
+		gls.uniformMatrix4fv(shaders.uniforms["scaletrans"], false, mz)
+		gls.uniform1i(shaders.uniforms["axis"], 3)
 		gls.drawArrays(gls.TRIANGLE_STRIP, 0, cubeStrip.length / 2);
 		// Wait for rendering to actually finish
 		gls.finish();

@@ -24,12 +24,20 @@ var state = {
 	zmax : 1,
 	// slices
 	display : true,
-	useColor : false,
 	scale : 0.5,
 	layout : "Corner",
 	xslice : 0.5,
 	yslice : 0.5,
-	zslice : 0.5
+	zslice : 0.5,
+	segLoad : function () {
+		document.getElementById("first").style.display = "initial";
+		document.getElementById("second").style.display = "none"
+		gui.destroy()
+		document.getElementById("body").classList.remove("bound")
+		reset()
+		state = initialState
+		initialState = Object.assign({},state)
+	}
 }
 
 
@@ -47,6 +55,7 @@ var colormaps = {
 
 var type = null;
 var volDims = null;
+var ids = null;
 
 function initVis() {
 
@@ -85,8 +94,16 @@ function initVis() {
 	if (type == "8bit") {
 		volume = new Uint8Array(volume)
 	}
-	if (type == "16bit") {
+	else if (type == "16bit") {
 		volume = new Uint16Array(volume)
+	}
+	else if (type == "16bitf") {
+		volume = new Uint16Array(volume)
+		volume = Float32Array.from(volume, x => x / 65536.0)
+		type = "float"
+	}
+	else if (type == "float") {
+		volume = new Float32Array(volume)
 	}
 
 	volDims = [x,y,z]
@@ -148,7 +165,7 @@ function initVis() {
 		gl.uniform3fv(shader.uniforms["box_max"], [state.xmax, state.ymax, state.zmax]);
 		allowSlow = true;
 	})
-	clipFolder.open()
+	// clipFolder.open()
 
 	var sliceFolder = gui.addFolder("Slices")
 	sliceFolder.add(state, 'display').name("Display")
@@ -161,7 +178,8 @@ function initVis() {
 			s.style.display = "none"
 		}
 	})
-	sliceFolder.add(state, 'useColor').name("Use Transfer")
+	state.useColor = segmentation ? "Segmentation" : "Grayscale"
+	sliceFolder.add(state, 'useColor', segmentation ? ["Grayscale", "Transfer function", "Segmentation"] : ["Grayscale", "Transfer function"]).name("Format")
 	.onChange(function () {
 		drawSlices();
 	})
@@ -199,7 +217,50 @@ function initVis() {
 	.onChange(function () {
 		drawSlices();
 	})
-	sliceFolder.open()
+	// sliceFolder.open()
+	gui.add(state, "segLoad").name("Load Mask")
+
+
+	if (segmentation) {
+		// This is for a max of 25 id's
+		// TODO make random for without controls for larger numbers
+		// TODO we can try nested folder once google fixes the DAT.gui bug
+		// TODO look at DAT.gui color layout issues
+		segmentation = new Uint8Array(segmentation)
+		ids = unique(segmentation)
+		state.useSegmentation = true;
+		gui.add(state, "useSegmentation").name("Use Segmentation")
+		.onChange(function () {
+			gl.uniform1i(shader.uniforms["use_seg"], state.useSegmentation)
+		})
+		ids.forEach(function (id) {
+			state[id] = {
+				display : true,
+				clip : true,
+				color : randColor()
+			}
+			var idFolder = gui.addFolder(""+id)
+			idFolder.add(state[id], "display").name("Display")
+			.onChange(function () {
+				var displays = listDisplays(state, ids)
+				displays = displays.concat(new Array(25 * 3 - displays.length).fill(false))
+				gl.uniform1iv(dl, displays)
+			})
+			idFolder.add(state[id], "clip").name("Clip")
+			.onChange(function () {
+				var clips = listClips(state, ids)
+				clips = clips.concat(new Array(25 * 3 - clips.length).fill(false))
+				gl.uniform1iv(clp, clips)
+			})
+			idFolder.addColor(state[id], "color").name("Color")
+			.onChange(function () {
+				var colors = listColors(state, ids)
+				colors = colors.concat(new Array(25 * 3 - colors.length).fill(0))
+				gl.uniform3fv(cl, colors)
+				drawSlices()
+			})
+		})
+	}
 
 	colormapImage = new Image();
 	colormapImage.onload = function() {
