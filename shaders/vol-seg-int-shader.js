@@ -13,6 +13,7 @@ uniform vec3 box_max;
 
 uniform vec3 colors[25];
 uniform bool displays[25];
+uniform bool clips[25];
 uniform bool use_seg;
 uniform highp sampler3D segmentation;
 
@@ -21,11 +22,10 @@ flat in vec3 transformed_eye;
 out vec4 color;
 
 vec2 intersect_box(vec3 orig, vec3 dir) {
-	// const vec3 box_min = vec3(0);
-	// const vec3 box_max = vec3(1); //1
+
 	vec3 inv_dir = 1.0 / dir;
-	vec3 tmin_tmp = (box_min - orig) * inv_dir;
-	vec3 tmax_tmp = (box_max - orig) * inv_dir;
+	vec3 tmin_tmp = (vec3(0,0,0) - orig) * inv_dir;
+	vec3 tmax_tmp = (vec3(1,1,1) - orig) * inv_dir;
 	vec3 tmin = min(tmin_tmp, tmax_tmp);
 	vec3 tmax = max(tmin_tmp, tmax_tmp);
 	float t0 = max(tmin.x, max(tmin.y, tmin.z));
@@ -63,11 +63,14 @@ void main(void) {
 
 			int seg = int(255.0 * texture(segmentation, p).r);
 			bool use = true;
+			bool clip = true;
 			for (int k = 0; k <= seg && k < 25; ++k)
-	            if (seg == k)
+	            if (seg == k) {
 	                use = displays[k];
+	                clip = clips[k];
+	            }
 
-	        if (use) {
+	        if (use && (!clip || (p.x > box_min.x && p.y > box_min.y && p.z > box_min.z && p.x < box_max.x && p.y < box_max.y && p.z < box_max.z))) {
 	        	float val = float(texture(volume, p).r) / 65536.0;
 				vec4 val_color;
 		        for (int k = 0; k <= seg && k < 25; ++k)
