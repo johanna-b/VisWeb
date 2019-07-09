@@ -5,6 +5,7 @@ var gl = null;
 var shader = null;
 var cl = null;
 var dl = null;
+var clp = null;
 
 
 var proj = null;
@@ -131,7 +132,12 @@ function initVol(){
 		var displays = listDisplays(state, ids)
 		displays = displays.concat(new Array(25 * 3 - displays.length).fill(false))
 		gl.uniform1iv(dl, displays)
-		
+
+
+		clp = gl.getUniformLocation(shader.program, "clips")
+		var clips = listClips(state, ids)
+		clips = clips.concat(new Array(25 * 3 - clips.length).fill(false))
+		gl.uniform1iv(clp, clips)
 
 		var seg = gl.createTexture();
 		gl.activeTexture(gl.TEXTURE2);

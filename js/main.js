@@ -236,6 +236,7 @@ function initVis() {
 		ids.forEach(function (id) {
 			state[id] = {
 				display : true,
+				clip : true,
 				color : randColor()
 			}
 			var idFolder = gui.addFolder(""+id)
@@ -244,6 +245,12 @@ function initVis() {
 				var displays = listDisplays(state, ids)
 				displays = displays.concat(new Array(25 * 3 - displays.length).fill(false))
 				gl.uniform1iv(dl, displays)
+			})
+			idFolder.add(state[id], "clip").name("Clip")
+			.onChange(function () {
+				var clips = listClips(state, ids)
+				clips = clips.concat(new Array(25 * 3 - clips.length).fill(false))
+				gl.uniform1iv(clp, clips)
 			})
 			idFolder.addColor(state[id], "color").name("Color")
 			.onChange(function () {

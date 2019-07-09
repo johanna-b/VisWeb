@@ -71,3 +71,11 @@ function listDisplays(obj, ids) {
 	})
 	return cl;
 }
+
+function listClips(obj, ids) {
+	var cl = []
+	ids.forEach(function (id) {
+		cl = cl.concat(obj[id]["clip"])
+	})
+	return cl;
+}
