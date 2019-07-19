@@ -3,6 +3,9 @@ var gui = null
 
 var state = {
 	transfer : "Cool Warm",
+	customTransfer : function () {
+		startOverlay();
+	},
 	screenshot : function () {
 		takeScreenShot = true;
 	},
@@ -14,6 +17,7 @@ var state = {
 		reset()
 		state = initialState
 		initialState = Object.assign({},state)
+		transInit = false
 	},
 	// clipping planes
 	xmin : 0,
@@ -37,6 +41,7 @@ var state = {
 		reset()
 		state = initialState
 		initialState = Object.assign({},state)
+		transInit = false
 	}
 }
 
@@ -129,6 +134,8 @@ function initVis() {
 		colormapImage.src = colormaps[newValue];
 	})
 	.name("Transfer function")
+	gui.add(state, 'customTransfer')
+	.name("Custom Transfer")
 	gui.add(state, "screenshot")
 	.name("Take Screenshot")
 	gui.add(state, "reload")

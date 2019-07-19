@@ -31,6 +31,9 @@ var boxFragShaderSegInt =
       for (int k = 0; k <= seg && k < 25; ++k)
         if (seg == k)
             color = vec4(colors[k], 1.0);
+      if (invert) {
+        color = vec4(1.0,1.0,1.0, 1.0);
+      }
     }
     else {
       color = vec4(1.0,1.0,1.0,val);

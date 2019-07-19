@@ -18,6 +18,8 @@
 
 		<!-- remove this if you use Modernizr -->
 		<script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+
+		<script src="https://kit.fontawesome.com/9af842ce83.js"></script>
 	</head>
 	<body id="body">
 
@@ -73,10 +75,16 @@
 				<div id="x_box"></div>
 				<div id="y_box"></div>
 				<div id="z_box"></div>
-				<canvas id="slcanvas" class="over_canvas">
+				<canvas id="slcanvas" class="over_canvas"></canvas>
 			</div>
-			</canvas>
 		</div>
+
+	<!-- overlay -->
+	<div id="overlay" class="overlay" style="display: none;">
+		<div class="lside"> Transfer Function Editor</div>
+		<div id="hist" class="hist"></div>
+		<div class="rside"> <i id="close" class="fas fa-times fa-lg icon"></i> <br> <i id="info" class="fas fa-info-circle fa-lg icon"></i></div>
+	</div>
 
 
 	<script type="text/javascript" src="js/dat.gui.js"></script>
@@ -95,6 +103,11 @@
 	<script type="text/javascript" src="js/helpers.js"></script>
 	<script src="js/volume-raycaster.js"></script>
 	<script type="text/javascript" src="js/slices.js"></script>
+	<script type="text/javascript" src="js/popper.min.js"></script>
+	<script type="text/javascript" src="js/tooltip.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/popper.css">
+	<script type="text/javascript" src="js/two.min.js"></script>
+	<script type="text/javascript" src="js/overlay.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
 		
 

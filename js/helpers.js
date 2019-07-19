@@ -79,3 +79,23 @@ function listClips(obj, ids) {
 	})
 	return cl;
 }
+
+function floatSafeRemainder(val, step){
+	var valDecCount = (val.toString().split('.')[1] || '').length;
+	var stepDecCount = (step.toString().split('.')[1] || '').length;
+	var decCount = valDecCount > stepDecCount? valDecCount : stepDecCount;
+	var valInt = parseInt(val.toFixed(decCount).replace('.',''));
+	var stepInt = parseInt(step.toFixed(decCount).replace('.',''));
+	return (valInt % stepInt) / Math.pow(10, decCount);
+}
+
+function binHist(arr, bins, max) {
+
+	var step = max / bins;
+	
+	var hist = Array(bins).fill(0);
+	for (var i = 0; i < arr.length; i++) {
+	 	hist[Math.floor(arr[i] / step)] += 1;
+	}
+	return hist
+}
