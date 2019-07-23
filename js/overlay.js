@@ -2,11 +2,25 @@
 
 function drawPolygon() {
 	controlPoints.sort( (a, b) => a.translation.x - b.translation.x)
-	two.remove(controlPath)
+	background.remove(controlPath)
 	controlPointsWithEnds = [new Two.Anchor(controlPoints[0].translation.x, div.offsetHeight)]
 	.concat(controlPoints.map(p => p.translation.clone()))
-	.concat([new Two.Anchor(controlPoints[numControlPoints - 1].translation.x, div.offsetHeight)])
+	.concat([new Two.Anchor(controlPoints[controlPoints.length - 1].translation.x, div.offsetHeight)])
 	controlPath = two.makePath(controlPointsWithEnds)
+	controlPath.stroke = "#C4C0BB"
+	controlPath.linewidth = 3
+	var stops = []
+	var polyWidth = controlPoints[controlPoints.length - 1].translation.x - controlPoints[0].translation.x
+	for (var i = 0; i < controlPoints.length; i++) {
+		var pt = controlPoints[i]
+		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].translation.x) / polyWidth, pt.fill, 0.8))
+	}
+	var linearGradient = two.makeLinearGradient(
+          -polyWidth / 2, two.height / 2,
+          polyWidth / 2, two.height / 2, ... stops
+        );
+	controlPath.fill = linearGradient;
+	background.add(controlPath)
 	two.update()
 }
 
@@ -78,8 +92,11 @@ var xPos, yPos, xPosOld, yPosOld;
 var transInit = false;
 var controlPoints = [];
 var numControlPoints = 5;
+var initControlColors = ["#742B69", "#C1524A", "#E78739", "#F1C24E", "#FCFFAD"]
 var controlPath = null;
 var two = null;
+var background = null;
+var forground = null;
 
 function startOverlay() {
 	over.style.display = "block";
@@ -107,7 +124,7 @@ function startOverlay() {
 		var border = {top : 5, left : 5, right : 5}
 		var w = div.offsetWidth;
 		var h = div.offsetHeight;
-		two = new Two({width : w, height : h, autostart : true}).appendTo(div)
+		two = new Two({width : w, height : h}).appendTo(div)
 
 
 		var histLogAnchors = [new Two.Anchor(border.left, h)];
@@ -135,13 +152,17 @@ function startOverlay() {
 		histCurve.fill = "#4E4E4E";;
 		histCurve.stroke = "#5c5c5c";
 
+		background = two.makeGroup()
+		forground = two.makeGroup()
 
 		var step = w / (numControlPoints - 1)
 		for (var i = 0; i < numControlPoints; i++) {
 			var pt = two.makeCircle(i * step, h/2, 7)
 			pt.stroke = "#C4C0BB";
 			pt.linewidth = 2
+			pt.fill = initControlColors[i]
 			controlPoints.push(pt)
+			forground.add(pt)
 		}
 		two.update();
 		controlPoints.map(addInteractivity)
@@ -185,4 +206,4 @@ close.addEventListener('click', function () {
 })
 
 var info = document.getElementById("info")
-var infoBox = new Tooltip(info, {placement: "right", title: "this is a very very long and random test string", offset: "0, 10"})
+var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to change the gradient. ", offset: "0, 10"})
