@@ -6,14 +6,14 @@ function drawPolygon() {
 	controlPointsWithEnds = [new Two.Anchor(controlPoints[0].translation.x, div.offsetHeight)]
 	.concat(controlPoints.map(p => p.translation.clone()))
 	.concat([new Two.Anchor(controlPoints[controlPoints.length - 1].translation.x, div.offsetHeight)])
-	controlPath = two.makePath(controlPointsWithEnds)
+	controlPath = two.makePath(controlPointsWithEnds, true)
 	controlPath.stroke = "#C4C0BB"
 	controlPath.linewidth = 3
 	var stops = []
 	var polyWidth = controlPoints[controlPoints.length - 1].translation.x - controlPoints[0].translation.x
 	for (var i = 0; i < controlPoints.length; i++) {
 		var pt = controlPoints[i]
-		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].translation.x) / polyWidth, pt.fill, 0.8))
+		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].translation.x) / polyWidth, pt.fill, 0.8)) //0.8
 	}
 	var linearGradient = two.makeLinearGradient(
           -polyWidth / 2, two.height / 2,
@@ -29,61 +29,63 @@ function addInteractivity(shape) {
     var offset = shape.parent.translation;
 
     var drag = function(e) {
-      e.preventDefault();
-      var x = e.clientX - div.offsetLeft - offset.x - over.offsetLeft;
-      x = x < 0 ? 0 : x;
-      x = x > div.offsetWidth ? div.offsetWidth : x;
-      var y = e.clientY - div.offsetTop - offset.y - over.offsetTop;
-      y = y < 0 ? 0 : y;
-      y = y > div.offsetHeight ? div.offsetHeight : y;
-      shape.translation.set(x, y);
-      drawPolygon();
+	   	e.preventDefault();
+	    var x = e.clientX - div.offsetLeft - offset.x - over.offsetLeft;
+	    x = x < 0 ? 0 : x;
+	    x = x > div.offsetWidth ? div.offsetWidth : x;
+	    var y = e.clientY - div.offsetTop - offset.y - over.offsetTop;
+	    y = y < 0 ? 0 : y;
+	    y = y > div.offsetHeight ? div.offsetHeight : y;
+	    shape.translation.set(x, y);
+	    drawPolygon();
     };
     var touchDrag = function(e) {
-      e.preventDefault();
-      var touch = e.originalEvent.changedTouches[0];
-      drag({
-        preventDefault: _.identity,
-        clientX: touch.pageX,
-        clientY: touch.pageY
-      });
-      return false;
-    };
+	    e.preventDefault();
+	    var touch = e.originalEvent.changedTouches[0];
+	    drag({
+	        preventDefault: _.identity,
+	        clientX: touch.pageX,
+	        clientY: touch.pageY
+	    });
+	    return false;
+	};
     var dragEnd = function(e) {
-      e.preventDefault();
-      over.addEventListener("mousedown", onMouseDown, false)
-      $(window)
-        .unbind('mousemove', drag)
-        .unbind('mouseup', dragEnd);
+	    e.preventDefault();
+	    over.addEventListener("mousedown", onMouseDown, false)
+	    $(window)
+	        .unbind('mousemove', drag)
+	        .unbind('mouseup', dragEnd);
     };
     var touchEnd = function(e) {
-      e.preventDefault();
-      over.addEventListener("mousedown", onMouseDown, false)
-      $(window)
-        .unbind('touchmove', touchDrag)
-        .unbind('touchend', touchEnd);
-      return false;
+	    e.preventDefault();
+	    over.addEventListener("mousedown", onMouseDown, false)
+	    $(window)
+	        .unbind('touchmove', touchDrag)
+	        .unbind('touchend', touchEnd);
+	    return false;
     };
 
     $(shape._renderer.elem)
-      .css({
-        cursor: 'pointer'
-      })
-      .bind('mousedown', function(e) {
-        e.preventDefault();
-        over.removeEventListener("mousedown", onMouseDown)
-        $(window)
-          .bind('mousemove', drag)
-          .bind('mouseup', dragEnd);
-      })
-      .bind('touchstart', function(e) {
-        e.preventDefault();
-        over.removeEventListener("mousedown", onMouseDown)
-        $(window)
-          .bind('touchmove', touchDrag)
-          .bind('touchend', touchEnd);
-        return false;
-      });
+        .css({
+        	cursor: 'pointer'
+        })
+        .bind('mousedown', function(e) {
+	        e.preventDefault();
+	        if (e.button == 0) {
+		        over.removeEventListener("mousedown", onMouseDown)
+		        $(window)
+		            .bind('mousemove', drag)
+		            .bind('mouseup', dragEnd);
+	        }
+        })
+        .bind('touchstart', function(e) {
+	        e.preventDefault();
+	        over.removeEventListener("mousedown", onMouseDown)
+	        $(window)
+	            .bind('touchmove', touchDrag)
+	            .bind('touchend', touchEnd);
+	        return false;
+        });
 }
 
 var over = document.getElementById('overlay');
@@ -97,6 +99,18 @@ var controlPath = null;
 var two = null;
 var background = null;
 var forground = null;
+
+div.addEventListener("dblclick", function (e) {
+	var pt = two.makeCircle(e.clientX - div.offsetLeft - over.offsetLeft, e.clientY - div.offsetTop - over.offsetTop, 7)
+	pt.stroke = "#C4C0BB";
+	pt.linewidth = 2
+	pt.fill = getColor(e.clientX - div.offsetLeft - over.offsetLeft, controlPoints)
+	controlPoints.push(pt)
+	forground.add(pt)
+	two.update()
+	addInteractivity(pt)
+	drawPolygon()
+}, false)
 
 function startOverlay() {
 	over.style.display = "block";
@@ -121,7 +135,7 @@ function startOverlay() {
 		histLog = hist.map(x => x + 1)
 		histLog = histLog.map(Math.log)
 
-		var border = {top : 5, left : 5, right : 5}
+		var border = {top : 5, left : 0, right : 0}
 		var w = div.offsetWidth;
 		var h = div.offsetHeight;
 		two = new Two({width : w, height : h}).appendTo(div)
@@ -163,6 +177,23 @@ function startOverlay() {
 			pt.fill = initControlColors[i]
 			controlPoints.push(pt)
 			forground.add(pt)
+			two.update()
+			pt.pickr = Pickr.create({
+				el : "#" + pt.id,
+				theme : 'nano',
+				useAsButton : true,
+    			components: {
+			        preview: true,
+			        opacity: false,
+			        hue: true,
+			        interaction: {
+			            hex: true,
+			            input: true,
+			            save: true
+			        }
+			    }
+			})
+			console.log(pt)
 		}
 		two.update();
 		controlPoints.map(addInteractivity)
@@ -206,4 +237,4 @@ close.addEventListener('click', function () {
 })
 
 var info = document.getElementById("info")
-var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to change the gradient. ", offset: "0, 10"})
+var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point.", offset: "0, 10"})

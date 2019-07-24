@@ -105,6 +105,31 @@ function binHist(arr, bins, max) {
 	return hist
 }
 
+function lerpColor(a, b, amount) { 
+
+    var ah = parseInt(a.replace(/#/g, ''), 16),
+        ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
+        bh = parseInt(b.replace(/#/g, ''), 16),
+        br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
+        rr = ar + amount * (br - ar),
+        rg = ag + amount * (bg - ag),
+        rb = ab + amount * (bb - ab);
+
+    return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+}
+
 function getColor(pos, anchors) {
-	// var left = anchors.find(a => a.translation.x > )
+	anchors.sort( (a, b) => a.translation.x - b.translation.x)
+	var right = anchors.find(a => a.translation.x > pos)
+	anchors = anchors.reverse()
+	var left = anchors.find(a => a.translation.x < pos)
+	if (left && right) {
+		return lerpColor(left.fill, right.fill, (pos - left.translation.x) / (right.translation.x - left.translation.x))
+	}
+	else if (left) {
+		return left.fill
+	}
+	else {
+		return right.fill
+	}
 }
