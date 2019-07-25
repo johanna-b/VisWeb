@@ -178,22 +178,29 @@ function startOverlay() {
 			controlPoints.push(pt)
 			forground.add(pt)
 			two.update()
-			pt.pickr = Pickr.create({
+			var picker = Pickr.create({
 				el : "#" + pt.id,
 				theme : 'nano',
 				useAsButton : true,
+				defaultRepresentation : 'HEX',
+				default : pt.fill,
+				disabled : true,
     			components: {
 			        preview: true,
 			        opacity: false,
 			        hue: true,
 			        interaction: {
-			            hex: true,
 			            input: true,
 			            save: true
 			        }
 			    }
 			})
-			console.log(pt)
+			picker.pt = pt
+			picker.on('save', function (c, p) {
+				p.pt.fill = c.toHEXA().toString();
+				drawPolygon();
+			})
+			picker.enable();
 		}
 		two.update();
 		controlPoints.map(addInteractivity)
