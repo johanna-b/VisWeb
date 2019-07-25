@@ -1,19 +1,19 @@
 
 
 function drawPolygon() {
-	controlPoints.sort( (a, b) => a.translation.x - b.translation.x)
+	controlPoints.sort( (a, b) => a.pt.translation.x - b.pt.translation.x)
 	background.remove(controlPath)
-	controlPointsWithEnds = [new Two.Anchor(controlPoints[0].translation.x, div.offsetHeight)]
-	.concat(controlPoints.map(p => p.translation.clone()))
-	.concat([new Two.Anchor(controlPoints[controlPoints.length - 1].translation.x, div.offsetHeight)])
+	controlPointsWithEnds = [new Two.Anchor(controlPoints[0].pt.translation.x, div.offsetHeight)]
+	.concat(controlPoints.map(p => p.pt.translation.clone()))
+	.concat([new Two.Anchor(controlPoints[controlPoints.length - 1].pt.translation.x, div.offsetHeight)])
 	controlPath = two.makePath(controlPointsWithEnds, true)
 	controlPath.stroke = "#C4C0BB"
 	controlPath.linewidth = 3
 	var stops = []
-	var polyWidth = controlPoints[controlPoints.length - 1].translation.x - controlPoints[0].translation.x
+	var polyWidth = controlPoints[controlPoints.length - 1].pt.translation.x - controlPoints[0].pt.translation.x
 	for (var i = 0; i < controlPoints.length; i++) {
-		var pt = controlPoints[i]
-		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].translation.x) / polyWidth, pt.fill, 0.8)) //0.8
+		var pt = controlPoints[i].pt
+		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].pt.translation.x) / polyWidth, pt.fill, 0.8)) //0.8
 	}
 	var linearGradient = two.makeLinearGradient(
           -polyWidth / 2, two.height / 2,
@@ -26,7 +26,7 @@ function drawPolygon() {
 
 function addInteractivity(shape) {
 
-    var offset = shape.parent.translation;
+    var offset = shape.pt.parent.translation;
 
     var drag = function(e) {
 	   	e.preventDefault();
@@ -36,7 +36,7 @@ function addInteractivity(shape) {
 	    var y = e.clientY - div.offsetTop - offset.y - over.offsetTop;
 	    y = y < 0 ? 0 : y;
 	    y = y > div.offsetHeight ? div.offsetHeight : y;
-	    shape.translation.set(x, y);
+	    shape.pt.translation.set(x, y);
 	    drawPolygon();
     };
     var touchDrag = function(e) {
@@ -65,7 +65,7 @@ function addInteractivity(shape) {
 	    return false;
     };
 
-    $(shape._renderer.elem)
+    $(shape.pt._renderer.elem)
         .css({
         	cursor: 'pointer'
         })
@@ -77,6 +77,11 @@ function addInteractivity(shape) {
 		            .bind('mousemove', drag)
 		            .bind('mouseup', dragEnd);
 	        }
+	        else if (e.button == 2) {
+	        	shape.enable()
+	        	shape.show()
+	        	shape.dis = false
+	        }
         })
         .bind('touchstart', function(e) {
 	        e.preventDefault();
@@ -85,7 +90,50 @@ function addInteractivity(shape) {
 	            .bind('touchmove', touchDrag)
 	            .bind('touchend', touchEnd);
 	        return false;
-        });
+        })
+}
+
+function makeControlPoint(x, y, c, two) {
+	var pt = two.makeCircle(x, y, 7)
+	pt.fill = c
+	pt.stroke = "#C4C0BB";
+	pt.linewidth = 2
+	two.update()
+	var picker = Pickr.create({
+		el : "#" + pt.id,
+		theme : 'nano',
+		useAsButton : true,
+		defaultRepresentation : 'HEX',
+		default : pt.fill,
+		disabled : true,
+		components: {
+	        preview: true,
+	        opacity: false,
+	        hue: true,
+	        interaction: {
+	            input: true,
+	            save: true
+	        }
+	    }
+	})
+	picker.pt = pt
+	picker.dis = true
+	picker.on('save', function (c, p) {
+		p.pt.fill = c.toHEXA().toString();
+		drawPolygon();
+	})
+	picker.on('hide', function (p) {
+		if (!p.dis) {
+			p.dis = true
+			p.disable()
+		}
+		p.setColor(p.pt.fill)
+	})
+	picker.on('cancel', function (argument) {
+		alert("sdfg")
+	})
+	addInteractivity(picker)
+	return picker;
 }
 
 var over = document.getElementById('overlay');
@@ -101,14 +149,10 @@ var background = null;
 var forground = null;
 
 div.addEventListener("dblclick", function (e) {
-	var pt = two.makeCircle(e.clientX - div.offsetLeft - over.offsetLeft, e.clientY - div.offsetTop - over.offsetTop, 7)
-	pt.stroke = "#C4C0BB";
-	pt.linewidth = 2
-	pt.fill = getColor(e.clientX - div.offsetLeft - over.offsetLeft, controlPoints)
-	controlPoints.push(pt)
-	forground.add(pt)
-	two.update()
-	addInteractivity(pt)
+	var cpt = makeControlPoint(e.clientX - div.offsetLeft - over.offsetLeft, e.clientY - div.offsetTop - over.offsetTop,
+		getColor(e.clientX - div.offsetLeft - over.offsetLeft, controlPoints), two)
+	controlPoints.push(cpt)
+	forground.add(cpt.pt)
 	drawPolygon()
 }, false)
 
@@ -171,38 +215,10 @@ function startOverlay() {
 
 		var step = w / (numControlPoints - 1)
 		for (var i = 0; i < numControlPoints; i++) {
-			var pt = two.makeCircle(i * step, h/2, 7)
-			pt.stroke = "#C4C0BB";
-			pt.linewidth = 2
-			pt.fill = initControlColors[i]
-			controlPoints.push(pt)
-			forground.add(pt)
-			two.update()
-			var picker = Pickr.create({
-				el : "#" + pt.id,
-				theme : 'nano',
-				useAsButton : true,
-				defaultRepresentation : 'HEX',
-				default : pt.fill,
-				disabled : true,
-    			components: {
-			        preview: true,
-			        opacity: false,
-			        hue: true,
-			        interaction: {
-			            input: true,
-			            save: true
-			        }
-			    }
-			})
-			picker.pt = pt
-			picker.on('save', function (c, p) {
-				p.pt.fill = c.toHEXA().toString();
-				drawPolygon();
-			})
-			picker.enable();
+			var cpt = makeControlPoint(i * step, h/2, initControlColors[i], two)
+			controlPoints.push(cpt)
+			forground.add(cpt.pt)
 		}
-		two.update();
 		controlPoints.map(addInteractivity)
 
 		transInit = true;
@@ -236,7 +252,7 @@ window.addEventListener('mouseup', function () {
 	window.removeEventListener('mousemove', onMouseMove)
 })
 
-
+over.addEventListener('contextmenu', e => e.preventDefault())
 
 var close = document.getElementById("close")
 close.addEventListener('click', function () {
@@ -244,4 +260,4 @@ close.addEventListener('click', function () {
 })
 
 var info = document.getElementById("info")
-var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point.", offset: "0, 10"})
+var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point. Right click to edit the color of a point.", offset: "0, 10"})

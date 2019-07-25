@@ -119,17 +119,17 @@ function lerpColor(a, b, amount) {
 }
 
 function getColor(pos, anchors) {
-	anchors.sort( (a, b) => a.translation.x - b.translation.x)
-	var right = anchors.find(a => a.translation.x > pos)
+	anchors.sort( (a, b) => a.pt.translation.x - b.pt.translation.x)
+	var right = anchors.find(a => a.pt.translation.x > pos)
 	anchors = anchors.reverse()
-	var left = anchors.find(a => a.translation.x < pos)
+	var left = anchors.find(a => a.pt.translation.x < pos)
 	if (left && right) {
-		return lerpColor(left.fill, right.fill, (pos - left.translation.x) / (right.translation.x - left.translation.x))
+		return lerpColor(left.pt.fill, right.pt.fill, (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x))
 	}
 	else if (left) {
-		return left.fill
+		return left.pt.fill
 	}
 	else {
-		return right.fill
+		return right.pt.fill
 	}
 }
