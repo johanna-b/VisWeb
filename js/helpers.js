@@ -118,8 +118,13 @@ function lerpColor(a, b, amount) {
     return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
 }
 
+var stableSort = (arr, compare) => arr
+  .map((item, index) => ({item, index}))
+  .sort((a, b) => compare(a.item, b.item) || a.index - b.index)
+  .map(({item}) => item)
+
 function getColor(pos, anchors) {
-	anchors.sort( (a, b) => a.pt.translation.x - b.pt.translation.x)
+	anchors = stableSort(anchors, (a, b) => a.pt.translation.x - b.pt.translation.x)
 	var right = anchors.find(a => a.pt.translation.x > pos)
 	anchors = anchors.reverse()
 	var left = anchors.find(a => a.pt.translation.x < pos)
@@ -131,5 +136,18 @@ function getColor(pos, anchors) {
 	}
 	else {
 		return right.pt.fill
+	}
+}
+
+function getHeight(pos, anchors) {
+	anchors = stableSort(anchors, (a, b) => a.pt.translation.x - b.pt.translation.x)
+	var right = anchors.find(a => a.pt.translation.x > pos)
+	anchors = anchors.reverse()
+	var left = anchors.find(a => a.pt.translation.x < pos)
+	if (left && right) {
+		return left.pt.translation.y + (left.pt.translation.y - right.pt.translation.y) * (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x)
+	}
+	else {
+		return 0
 	}
 }

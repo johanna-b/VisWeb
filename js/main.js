@@ -5,6 +5,7 @@ var state = {
 	transfer : "Cool Warm",
 	customTransfer : function () {
 		startOverlay();
+		state.transfer = "Custom"
 	},
 	screenshot : function () {
 		takeScreenShot = true;
@@ -119,23 +120,30 @@ function initVis() {
 
 
 	gui = new dat.GUI();
-	gui.add(state, "transfer", ["Cool Warm", "Matplotlib Plasma", "Matplotlib Virdis", "Rainbow", "Samsel Linear Green", "Samsel Linear YGB 1211G"])
+	gui.add(state, "transfer", ["Cool Warm", "Matplotlib Plasma", "Matplotlib Virdis", "Rainbow", "Samsel Linear Green", "Samsel Linear YGB 1211G", "Custom"])
 	.onChange(function (newValue) {
-		var colormapImage = new Image();
-		colormapImage.onload = function() {
-			gl.activeTexture(gl.TEXTURE1);
-			gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
-				gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
-			gls.activeTexture(gls.TEXTURE1);
-			gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
-				gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
-			drawSlices();
-		};
-		colormapImage.src = colormaps[newValue];
+		if (newValue != "Custom") {
+			var colormapImage = new Image();
+			colormapImage.onload = function() {
+				gl.activeTexture(gl.TEXTURE1);
+				gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
+					gl.RGBA, gl.UNSIGNED_BYTE, colormapImage);
+				gls.activeTexture(gls.TEXTURE1);
+				gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
+					gls.RGBA, gls.UNSIGNED_BYTE, colormapImage);
+				drawSlices();
+			};
+			colormapImage.src = colormaps[newValue];
+		}
+		if (newValue == "Custom") {
+			startOverlay();
+			over.style.display = "none";
+		}
 	})
+	.listen()
 	.name("Transfer function")
 	gui.add(state, 'customTransfer')
-	.name("Custom Transfer")
+	.name("Transfer Editor")
 	gui.add(state, "screenshot")
 	.name("Take Screenshot")
 	gui.add(state, "reload")
@@ -273,6 +281,7 @@ function initVis() {
 	colormapImage.onload = function() {
 		initVol()
 		initSlice()
+		console.log(colormapImage)
 	};
 	colormapImage.src = colormaps[state.transfer];
 

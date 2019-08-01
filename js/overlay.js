@@ -13,7 +13,7 @@ function drawPolygon() {
 	var polyWidth = controlPoints[controlPoints.length - 1].pt.translation.x - controlPoints[0].pt.translation.x
 	for (var i = 0; i < controlPoints.length; i++) {
 		var pt = controlPoints[i].pt
-		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].pt.translation.x) / polyWidth, pt.fill, 0.8)) //0.8
+		stops.push(new Two.Stop((pt.translation.x - controlPoints[0].pt.translation.x) / polyWidth, pt.fill, 0.75)) //0.8
 	}
 	var linearGradient = two.makeLinearGradient(
           -polyWidth / 2, two.height / 2,
@@ -106,34 +106,65 @@ function makeControlPoint(x, y, c, two) {
 		defaultRepresentation : 'HEX',
 		default : pt.fill,
 		disabled : true,
+		comparison : true,
 		components: {
 	        preview: true,
 	        opacity: false,
 	        hue: true,
 	        interaction: {
 	            input: true,
-	            save: true
+	            save: true,
+	            cancel: true
 	        }
 	    }
 	})
 	picker.pt = pt
 	picker.dis = true
 	picker.on('save', function (c, p) {
+		if (c) {
+			p.pt.fill = c.toHEXA().toString();
+			drawPolygon();
+		}
+	})
+	picker.on('change', function (c, p) {
 		p.pt.fill = c.toHEXA().toString();
+		drawPolygon();
+	})
+	picker.on('cancel', function (p) {
+		p.pt.fill = p._lastColor.toHEXA().toString();
 		drawPolygon();
 	})
 	picker.on('hide', function (p) {
 		if (!p.dis) {
+			var c =  p._lastColor.toHEXA().toString();
+			p.pt.fill = c
+			p.setColor(c)
 			p.dis = true
 			p.disable()
+			drawPolygon()
 		}
-		p.setColor(p.pt.fill)
-	})
-	picker.on('cancel', function (argument) {
-		alert("sdfg")
+		console.log(p._lastColor)
 	})
 	addInteractivity(picker)
 	return picker;
+}
+
+function loadToShader() {
+	var colors = [];
+	var step = div.offsetWidth / 180; // this is the width of the texture
+	for (var i = 0.5; i < 180; i++) {
+		var a = 255 * getHeight(i * step, controlPoints) / div.offsetHeight
+		colors = colors.concat(hexToRgb(getColor(i * step, controlPoints)).concat([a]))
+	}
+	colors = new Uint8Array(colors.map(x => x * 255))
+	gl.activeTexture(gl.TEXTURE1);
+	gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 180, 1,
+		gl.RGBA, gl.UNSIGNED_BYTE, colors);
+	gls.activeTexture(gls.TEXTURE1);
+	gls.texSubImage2D(gls.TEXTURE_2D, 0, 0, 0, 180, 1,
+		gls.RGBA, gls.UNSIGNED_BYTE, colors);
+	drawSlices();
+	
 }
 
 var over = document.getElementById('overlay');
@@ -224,7 +255,9 @@ function startOverlay() {
 		transInit = true;
 
 		drawPolygon();
+		two.bind('update', loadToShader)
 	}
+	loadToShader()
 }
 
 function onMouseMove(e) {
@@ -260,4 +293,5 @@ close.addEventListener('click', function () {
 })
 
 var info = document.getElementById("info")
-var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point. Right click to edit the color of a point.", offset: "0, 10"})
+var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point. Right click to edit the color of a point. Click and drag anywhere on the editor to move it.", offset: "0, 10"})
+
