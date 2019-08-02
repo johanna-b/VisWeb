@@ -139,13 +139,14 @@ function getColor(pos, anchors) {
 	}
 }
 
-function getHeight(pos, anchors) {
+function getAlpha(pos, anchors, height) {
 	anchors = stableSort(anchors, (a, b) => a.pt.translation.x - b.pt.translation.x)
 	var right = anchors.find(a => a.pt.translation.x > pos)
 	anchors = anchors.reverse()
 	var left = anchors.find(a => a.pt.translation.x < pos)
 	if (left && right) {
-		return left.pt.translation.y + (left.pt.translation.y - right.pt.translation.y) * (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x)
+		var temp = height - left.pt.translation.y + (left.pt.translation.y - right.pt.translation.y) * (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x)
+		return temp / height
 	}
 	else {
 		return 0

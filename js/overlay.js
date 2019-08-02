@@ -143,7 +143,6 @@ function makeControlPoint(x, y, c, two) {
 			p.disable()
 			drawPolygon()
 		}
-		console.log(p._lastColor)
 	})
 	addInteractivity(picker)
 	return picker;
@@ -153,7 +152,7 @@ function loadToShader() {
 	var colors = [];
 	var step = div.offsetWidth / 180; // this is the width of the texture
 	for (var i = 0.5; i < 180; i++) {
-		var a = 255 * getHeight(i * step, controlPoints) / div.offsetHeight
+		var a = getAlpha(i * step, controlPoints, div.offsetHeight)
 		colors = colors.concat(hexToRgb(getColor(i * step, controlPoints)).concat([a]))
 	}
 	colors = new Uint8Array(colors.map(x => x * 255))
