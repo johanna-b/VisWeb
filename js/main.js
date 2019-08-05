@@ -281,7 +281,6 @@ function initVis() {
 	colormapImage.onload = function() {
 		initVol()
 		initSlice()
-		console.log(colormapImage)
 	};
 	colormapImage.src = colormaps[state.transfer];
 

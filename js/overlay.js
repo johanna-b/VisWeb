@@ -72,12 +72,20 @@ function addInteractivity(shape) {
         .bind('mousedown', function(e) {
 	        e.preventDefault();
 	        if (e.button == 0) {
-		        over.removeEventListener("mousedown", onMouseDown)
-		        $(window)
-		            .bind('mousemove', drag)
-		            .bind('mouseup', dragEnd);
+	        	if (deleteDown) {
+        		 	shape.remove();
+		        	forground.remove(shape.pt)
+		        	drawPolygon()
+	        	}
+	        	else {
+			        over.removeEventListener("mousedown", onMouseDown)
+			        $(window)
+			            .bind('mousemove', drag)
+			            .bind('mouseup', dragEnd)
+			    }
 	        }
 	        else if (e.button == 2) {
+	        	over.removeEventListener('mousedown', onMouseDown)
 	        	shape.enable()
 	        	shape.show()
 	        	shape.dis = false
@@ -91,6 +99,7 @@ function addInteractivity(shape) {
 	            .bind('touchend', touchEnd);
 	        return false;
         })
+        
 }
 
 function makeControlPoint(x, y, c, two) {
@@ -124,6 +133,7 @@ function makeControlPoint(x, y, c, two) {
 		if (c) {
 			p.pt.fill = c.toHEXA().toString();
 			drawPolygon();
+			over.addEventListener('mousedown', onMouseDown)
 		}
 	})
 	picker.on('change', function (c, p) {
@@ -142,8 +152,12 @@ function makeControlPoint(x, y, c, two) {
 			p.dis = true
 			p.disable()
 			drawPolygon()
+			over.addEventListener('mousedown', onMouseDown)
 		}
 	})
+	picker.remove = function () {
+		controlPoints.splice(controlPoints.indexOf(this), 1)
+	}
 	addInteractivity(picker)
 	return picker;
 }
@@ -249,7 +263,6 @@ function startOverlay() {
 			controlPoints.push(cpt)
 			forground.add(cpt.pt)
 		}
-		controlPoints.map(addInteractivity)
 
 		transInit = true;
 
@@ -292,5 +305,14 @@ close.addEventListener('click', function () {
 })
 
 var info = document.getElementById("info")
-var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point. Right click to edit the color of a point. Click and drag anywhere on the editor to move it.", offset: "0, 10"})
+var infoBox = new Tooltip(info, {placement: "right", title: "Click and drag on the anchor points to move them. Double click to add another anchor point. Right click to edit the color of a point. Delete + Click to remove a point. Click and drag anywhere on the editor to move it.", offset: "0, 10"})
 
+var deleteDown = false;
+$(window).keydown( function (e) {
+		            	if (e.keyCode == 46) {
+		            		deleteDown = true;
+		            	}
+		            })
+.keyup(function (e) {
+	deleteDown = false;
+})
