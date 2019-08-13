@@ -55,7 +55,8 @@ void main(void) {
 	vec3 p = transformed_eye + (t_hit.x + offset * dt) * ray_dir;
 	for (float t = t_hit.x; t < t_hit.y; t += dt) {
 		float val = float(texture(volume, p).r) / 65536.0;
-		vec4 val_color = vec4(texture(colormap, vec2(val, 0.5)).rgb, val);
+		vec4 trans_sample = texture(colormap, vec2(val, 0.5));
+		vec4 val_color = vec4(trans_sample.rgb, val * trans_sample.a);
 		// Opacity correction
 		val_color.a = 1.0 - pow(1.0 - val_color.a, dt_scale);
 		color.rgb += (1.0 - color.a) * val_color.a * val_color.rgb;

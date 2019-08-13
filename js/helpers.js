@@ -56,6 +56,11 @@ function hexToRgb(hex) {
   return [parseInt(result[1], 16) / 255,  parseInt(result[2], 16) / 255, parseInt(result[3], 16)/ 255];
 }
 
+function hexToRgba(hex, a) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return "rgba(" + parseInt(result[1], 16) + "," + parseInt(result[2], 16) + "," + parseInt(result[3], 16) + "," + a + ")";
+}
+
 function listColors(obj, ids) {
 	var cl = []
 	ids.forEach(function (id) {
@@ -78,4 +83,72 @@ function listClips(obj, ids) {
 		cl = cl.concat(obj[id]["clip"])
 	})
 	return cl;
+}
+
+function floatSafeRemainder(val, step){
+	var valDecCount = (val.toString().split('.')[1] || '').length;
+	var stepDecCount = (step.toString().split('.')[1] || '').length;
+	var decCount = valDecCount > stepDecCount? valDecCount : stepDecCount;
+	var valInt = parseInt(val.toFixed(decCount).replace('.',''));
+	var stepInt = parseInt(step.toFixed(decCount).replace('.',''));
+	return (valInt % stepInt) / Math.pow(10, decCount);
+}
+
+function binHist(arr, bins, max) {
+
+	var step = max / bins;
+	
+	var hist = Array(bins).fill(0);
+	for (var i = 0; i < arr.length; i++) {
+	 	hist[Math.floor(arr[i] / step)] += 1;
+	}
+	return hist
+}
+
+function lerpColor(a, b, amount) { 
+
+    var ah = parseInt(a.replace(/#/g, ''), 16),
+        ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
+        bh = parseInt(b.replace(/#/g, ''), 16),
+        br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
+        rr = ar + amount * (br - ar),
+        rg = ag + amount * (bg - ag),
+        rb = ab + amount * (bb - ab);
+
+    return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+}
+
+var stableSort = (arr, compare) => arr
+  .map((item, index) => ({item, index}))
+  .sort((a, b) => compare(a.item, b.item) || a.index - b.index)
+  .map(({item}) => item)
+
+function getColor(pos, anchors) {
+	anchors = stableSort(anchors, (a, b) => a.pt.translation.x - b.pt.translation.x)
+	var right = anchors.find(a => a.pt.translation.x > pos)
+	anchors = anchors.reverse()
+	var left = anchors.find(a => a.pt.translation.x < pos)
+	if (left && right) {
+		return lerpColor(left.pt.fill, right.pt.fill, (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x))
+	}
+	else if (left) {
+		return left.pt.fill
+	}
+	else {
+		return right.pt.fill
+	}
+}
+
+function getAlpha(pos, anchors, height) {
+	anchors = stableSort(anchors, (a, b) => a.pt.translation.x - b.pt.translation.x)
+	var right = anchors.find(a => a.pt.translation.x > pos)
+	anchors = anchors.reverse()
+	var left = anchors.find(a => a.pt.translation.x < pos)
+	if (left && right) {
+		var temp = height - left.pt.translation.y + (left.pt.translation.y - right.pt.translation.y) * (pos - left.pt.translation.x) / (right.pt.translation.x - left.pt.translation.x)
+		return temp / height
+	}
+	else {
+		return 0
+	}
 }
