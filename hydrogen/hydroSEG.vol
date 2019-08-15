@@ -1,0 +1,8 @@
+VOL
+rawfile hydro.raw
+type GL_UNSIGNED_SHORT
+volres 64 64 64
+voldim 1.0 1.0 1.0 
+inverse 1
+masks 1
+mask0 hydro1Mask.mask

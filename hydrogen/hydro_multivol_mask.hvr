@@ -1,0 +1,15 @@
+#HVR 1.00
+
+_VolumeSize 64 64 64
+_SliceDistances 1.0 1.0 1.0
+
+_DataType WORD_MULTIVOL
+
+_MultiVolumes 2
+
+_DataFile[ 0 ] hydro.raw
+_DataFile[ 1 ] hydroSwap.raw
+
+_Masks 2
+_MaskFile[0] hydro1Mask.mask
+_MaskFile[1] hydro1_2Mask.mask
