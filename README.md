@@ -3,17 +3,17 @@
 
 # How to use
 
-To load a dataset simply follow the prompts provided. The main file and its dimensions and datatype are required. Adding a segmentation mask is optional. If one is included it should be in 8 bit format and the same dimensions as the volume. All of the files should be `.raw` files. Click the visualize button to launch the data explorer. You should see the volume rendered in the center, a panel with slice view on the upper left and a panel with controls on the upper right. In the controls there are options for controling the slices, transfer function and clipping planes. If a segmentation mask was included, there will be an additional section of the controls that allow you to select which segmentation ID's to render as well as which to selectively clip. You can find 3 demo videos on this repository as well as some sample data and a copy hosted on GitHub pages [here](https://johanna-b.github.io/VisWeb/index.html).
+To load a dataset simply follow the prompts provided. The main file and its dimensions and datatype are required. Adding a segmentation mask is optional. If one is included it should be in 8 bit format and the same dimensions as the volume. All of the files should be `.raw` files. Click the visualize button to launch the data explorer. You should see the volume rendered in the center, a panel with slice view on the upper left and a panel with controls on the upper right. In the controls there are options for controlling the slices, transfer function and clipping planes. If a segmentation mask was included, there will be an additional section of the controls that allow you to select which segmentation ID's to render as well as which to selectively clip. You can find 3 demo videos on this repository as well as some sample data and a copy hosted on GitHub pages [here](https://johanna-b.github.io/VisWeb/index.html).
 
 # Support
 
-This is still a prototype however it should work smoothly on modern versions of Firefox and Chrome. For questions and support contact znicolaiscanio@college.harvard.edu
+This is still a prototype, however, it should work smoothly on modern versions of Firefox and Chrome. For questions and support contact znicolaiscanio@college.harvard.edu
 
 # Code Overview
 
 `index.html` - the html code for the main page of VelRen
 
-`/colormaps` - a folder containing the default transfer function options. They are `.png` 1px by 180px with alpha channel set to 1.
+`/colormaps` - a folder containing the default transfer function options. They are `.png` files 1px by 180px with alpha channel set to 1.
 
 `/fonts` - a folder with fonts for all of the icons used
 
@@ -25,7 +25,7 @@ This is still a prototype however it should work smoothly on modern versions of 
 
 `/css/nano.min.css` - style for the color picking tool
 
-`/shaders` - a folder with the source code for all of the shaders. Those with box in the name for for the slices view and those with vol are for the volume renderer. Those with seg in the main are used when a segmentation mask is included. Those with int in the name are used when the datatype is 16 bit.
+`/shaders` - a folder with the source code for all of the shaders. Those with "box" in the name are for the slices view and those with "vol" are for the volume renderer. Those with "seg" in the name are used when a segmentation mask is included. Those with "int" in the name are used when the datatype is 16 bit.
 
 `/js/dat.gui.js` - the library for the control panel
 
