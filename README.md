@@ -5,6 +5,10 @@
 
 To load a dataset simply follow the prompts provided. The main file and its dimensions and datatype are required. Adding a segmentation mask is optional. If one is included it should be in 8 bit format and the same dimensions as the volume. All of the files should be `.raw` files. Click the visualize button to launch the data explorer. You should see the volume rendered in the center, a panel with slice view on the upper left and a panel with controls on the upper right. In the controls there are options for controling the slices, transfer function and clipping planes. If a segmentation mask was included, there will be an additional section of the controls that allow you to select which segmentation ID's to render as well as which to selectively clip. You can find 3 demo videos on this repository as well as some sample data and a copy hosted on GitHub pages [here](https://johanna-b.github.io/VisWeb/index.html).
 
+# Support
+
+This is still a prototype however it should work smoothly on modern versions of Firefox and Chrome. For questions and support contact znicolaiscanio@college.harvard.edu
+
 # Code Overview
 
 `index.html` - the html code for the main page of VelRen
@@ -53,6 +57,3 @@ To load a dataset simply follow the prompts provided. The main file and its dime
 
 `/js/webgl-util.js` - a library of utility functions for WebGL
 
-# Support
-
-This is still a prototype however it should work smoothly on modern versions of Firefox and Chrome. For questions and support contact znicolaiscanio@college.harvard.edu
